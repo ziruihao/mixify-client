@@ -1,0 +1,17 @@
+{
+  "name": "starter-pack",
+  "version": "1.0.0",
+  "description": "SA3 for CS52",
+  "main": "src/index.js",
+  "repository": "https://github.com/dartmouth-cs52-19S/starterpack-ziruihao.git",
+  "author": "ziruihao <45774151+ziruihao@users.noreply.github.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "devDependencies": {
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.3.1"
+  }
+}
