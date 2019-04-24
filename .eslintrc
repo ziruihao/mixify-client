@@ -24,7 +24,7 @@
           "DebuggerStatement"
         ],
         "no-debugger": "warn",
-        "linebreak-style": 1,
+        "linebreak-style": 0,
         "react/jsx-uses-react": 2,
         "react/jsx-uses-vars": 2,
         "react/react-in-jsx-scope": 2,
