@@ -1,52 +1,27 @@
+// React imports
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {
-  BrowserRouter as Router, Route, NavLink, Switch,
-} from 'react-router-dom';
+
+// Redux imports
+import { Provider } from 'react-redux';
+import { createStore, applyMiddleware, compose } from 'redux';
+import reducers from './reducers';
+
+// style imports
 import './style.scss';
 
-const Nav = (props) => {
-  return (
-    <nav>
-      <ul>
-        <li><NavLink exact to="/">Home</NavLink></li>
-        <li><NavLink to="/about">About</NavLink></li>
-        <li><NavLink exact to="/test/id1">test id1</NavLink></li>
-      </ul>
-    </nav>
-  );
-};
+// import App
+import App from './components/app';
 
-const About = (props) => {
-  return <div> All there is to know about me </div>;
-};
-const Welcome = (props) => {
-  return <div>Welcome</div>;
-};
+// creates the store
+const store = createStore(reducers, {}, compose(
+  applyMiddleware(),
+  window.__REDUX_DEVTOOLS_EXTENSION__ ? window.__REDUX_DEVTOOLS_EXTENSION__() : f => f,
+));
 
-const Test = (props) => {
-  return <div> ID: {props.match.params.id} </div>;
-};
-
-const FallBack = (props) => {
-  return <div>URL Not Found</div>;
-};
-
-const App = () => {
-  return (
-    <Router>
-      <div>
-        <Nav />
-        <Switch>
-          <Route exact path="/" component={Welcome} />
-          <Route path="/about" component={About} />
-          <Route exact path="/test/:id" component={Test} />
-          <Route component={FallBack} />
-        </Switch>
-      </div>
-    </Router>
-  );
-};
-
-
-ReactDOM.render(<App />, document.getElementById('main'));
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('main'),
+);
