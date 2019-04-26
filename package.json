@@ -1,7 +1,7 @@
 {
-  "name": "starter-pack",
+  "name": "redux-pack",
   "version": "1.0.0",
-  "description": "SA3 for CS52",
+  "description": "SA5 for CS52",
   "main": "src/index.js",
   "repository": "https://github.com/dartmouth-cs52-19S/starterpack-ziruihao.git",
   "author": "ziruihao <45774151+ziruihao@users.noreply.github.com>",
@@ -11,7 +11,7 @@
     "test": "eslint src/**.js",
     "build": "yarn clean; NODE_ENV=production webpack --colors",
     "clean": "rimraf dist",
-    "deploy": "yarn build; surge -p dist -d cs52-starterpack-router.surge.sh; yarn clean"
+    "deploy": "yarn build; surge -p dist -d cs52-redux-ziruihao.surge.sh; yarn clean"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",
