@@ -59,3 +59,7 @@ typings/
 
 # next.js build output
 .next
+
+# from starter-pack
+dist
+.DS_Store
