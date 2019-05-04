@@ -15,8 +15,8 @@ const App = () => {
     <Router>
       <div>
         <Switch>
-          <Route exact path="/" component={Player} />
-          <Route path="/login" component={Login} />
+          <Route exact path="/" component={Login} />
+          <Route path="/app" component={Player} />
           <Route component={FallBack} />
         </Switch>
       </div>

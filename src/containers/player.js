@@ -9,7 +9,6 @@ class Player extends React.Component {
     this.playerCheckInterval = null;
     this.state = {
       device_id: {},
-      loggedIn: false,
     };
   }
 
@@ -18,12 +17,12 @@ class Player extends React.Component {
   }
 
   checkIfPlayerExists = () => {
-    const token = 'BQDD_N75Hu-wBXcv5xUkm9MqVQl124L_3T2QZbdkoqu8iC2dWo4mwdSGt0mFfAqhKriKXeJkv5HWM3ag3UVdKFu0vNrKDUik_dhC2wMfBu_hTeW_2MhsAF8V-KezmnCvf8vn-tR6lVdTh4aAkge0mETxu-6tj-2ud5IEtNPa2w';
+    const { token } = this.props;
 
     if (window.Spotify !== null) {
       clearInterval(this.playerCheckInterval);
       this.player = new window.Spotify.Player({
-        name: 'Matt\'s Mixify',
+        name: `${this.props.name}'s Mixify`,
         getOAuthToken: (cb) => { cb(token); },
       });
       this.playerEventHandlers();
@@ -37,7 +36,7 @@ class Player extends React.Component {
     this.player.on('initialization_error', (e) => { console.error(e); });
     this.player.on('authentication_error', (e) => {
       console.error(e);
-      this.setState({ loggedIn: false });
+      this.props.history.push('/');
     });
     this.player.on('account_error', (e) => { console.error(e); });
     this.player.on('playback_error', (e) => { console.error(e); });
@@ -48,7 +47,7 @@ class Player extends React.Component {
     // Ready
     this.player.on('ready', (data) => {
       const { device_id } = data;
-      console.log('Let the music play on!');
+      console.log(`Let the music play on ${this.state.device_id}!`);
       this.setState({ device_id });
     });
   }
@@ -62,7 +61,8 @@ class Player extends React.Component {
 
 const mapStateToProps = state => (
   {
-    music: state.music,
+    token: state.auth.token,
+    name: state.auth.name,
   }
 );
 
