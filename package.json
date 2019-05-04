@@ -1,9 +1,9 @@
 {
-  "name": "redux-pack",
+  "name": "mixify-client",
   "version": "1.0.0",
-  "description": "SA5 for CS52",
+  "description": "",
   "main": "src/index.js",
-  "repository": "https://github.com/dartmouth-cs52-19S/starterpack-ziruihao.git",
+  "repository": "https://github.com/ziruihao/mixify-client.git",
   "author": "ziruihao <45774151+ziruihao@users.noreply.github.com>",
   "license": "MIT",
   "scripts": {
@@ -11,7 +11,7 @@
     "test": "eslint src/**.js",
     "build": "yarn clean; NODE_ENV=production webpack --colors",
     "clean": "rimraf dist",
-    "deploy": "yarn build; surge -p dist -d cs52-redux-ziruihao.surge.sh; yarn clean"
+    "deploy": "yarn build; surge -p dist -d mixify.surge.sh; yarn clean"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",
