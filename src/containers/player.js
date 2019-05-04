@@ -18,7 +18,7 @@ class Player extends React.Component {
   }
 
   checkIfPlayerExists = () => {
-    const token = 'BQABA82sBAAwN48hLiiTP4cA42t_52ZVm0X-TigBiPHSZgv3hKp5FJPIYZR7SIl3kuODAee2s0BK81tbyvweVkZUcCFo9fPD9aeZr32QEeXcO2T5aLaQsXKpKmpwwu6XgHS8RVb_IFxOVM30eDfHEyGiAnFI-Tvw-CAV38FQYw';
+    const token = 'BQDD_N75Hu-wBXcv5xUkm9MqVQl124L_3T2QZbdkoqu8iC2dWo4mwdSGt0mFfAqhKriKXeJkv5HWM3ag3UVdKFu0vNrKDUik_dhC2wMfBu_hTeW_2MhsAF8V-KezmnCvf8vn-tR6lVdTh4aAkge0mETxu-6tj-2ud5IEtNPa2w';
 
     if (window.Spotify !== null) {
       clearInterval(this.playerCheckInterval);
