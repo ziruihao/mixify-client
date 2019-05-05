@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+// import { withRouter } from 'react-router-dom';
 
 // Grommet
 import { Button } from 'grommet';
@@ -16,10 +16,12 @@ class Login extends React.Component {
     };
   }
 
+  /**
+   * Sends request to process a login to mixify-server.
+   */
   requestLogin = () => {
     // this.props.requestLogin();
     this.props.saveToken(this.state.token);
-    this.props.history.push('/app');
   }
 
   render() {
@@ -30,7 +32,7 @@ class Login extends React.Component {
         </div>
         <p className="App-intro">
         Enter your Spotify access token. Get it from{' '}
-          <a href="https://beta.developer.spotify.com/documentation/web-playback-sdk/quick-start/#authenticating-with-spotify">
+          <a href="https://beta.developer.spotify.com/documentation/web-playback-sdk/quick-start/#authenticating-with-spotify" target="_blank" rel="noopener noreferrer">
           here
           </a>.
         </p>
@@ -51,4 +53,4 @@ const mapStateToProps = state => (
   }
 );
 
-export default withRouter(connect(mapStateToProps, { requestLogin, saveToken })(Login));
+export default (connect(mapStateToProps, { requestLogin, saveToken })(Login));

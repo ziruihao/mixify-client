@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import {
   BrowserRouter as Router, Route, Switch,
 } from 'react-router-dom';
@@ -10,18 +11,29 @@ const FallBack = (props) => {
   return <div>URL Not Found</div>;
 };
 
-const App = () => {
-  return (
-    <Router>
-      <div>
-        <Switch>
-          <Route exact path="/" component={Login} />
-          <Route path="/app" component={Player} />
-          <Route component={FallBack} />
-        </Switch>
-      </div>
-    </Router>
-  );
+const App = (props) => {
+  if (props.token === null) {
+    return (
+      <Login />
+    );
+  } else {
+    return (
+      <Router>
+        <div>
+          <Switch>
+            <Route exact path="/" component={Player} />
+            <Route component={FallBack} />
+          </Switch>
+        </div>
+      </Router>
+    );
+  }
 };
 
-export default App;
+const mapStateToProps = state => (
+  {
+    token: state.auth.token,
+  }
+);
+
+export default connect(mapStateToProps)(App);
