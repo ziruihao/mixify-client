@@ -1,9 +1,11 @@
 import { combineReducers } from 'redux';
 
-import authReducer from './auth-reducer';
+import AuthReducer from './auth-reducer';
+import MusicReducer from './music-reducer';
 
 const rootReducer = combineReducers({
-  auth: authReducer,
+  auth: AuthReducer,
+  music: MusicReducer,
 });
 
 export default rootReducer;
