@@ -40,7 +40,7 @@ class Mixer extends React.Component {
     return new Promise((resolve, reject) => {
       const collaborators = [];
       for (let i = 0; i < this.props.mix.collaboratorTokens.length; i += 1) {
-        this.sleep(5000).then(() => {
+        this.sleep(1000).then(() => {
           const collaborator = {
             name: '',
             id: '',
@@ -118,7 +118,7 @@ class Mixer extends React.Component {
    */
   mixx = () => {
     this.refreshCollaboratorData();
-    this.sleep(20000).then(() => {
+    this.sleep(3000).then(() => {
       console.log('begining');
       let playlistID = '';
       const config = {

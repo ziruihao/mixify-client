@@ -30,7 +30,7 @@ export function saveUser(user) {
 }
 
 /**
- * Requests server to serve login process.
+ * Requests mixify-server to serve login process.
  */
 export function requestLogin() {
   return () => {

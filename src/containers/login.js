@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 // Grommet
 import { Button } from 'grommet';
 
+// Axios
 import axios from 'axios';
 
 // actions
@@ -50,7 +51,7 @@ class Login extends React.Component {
         </div>
         <p className="App-intro">
           Enter your Spotify access token. Get it from{' '}
-          <a href="https://beta.developer.spotify.com/documentation/web-playback-sdk/quick-start/#authenticating-with-spotify" target="_blank" rel="noopener noreferrer">
+          <a href="https://mixify-server.herokuapp.com/login" target="_blank" rel="noopener noreferrer">
           here
           </a>.
         </p>
