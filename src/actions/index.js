@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export const ActionTypes = {
   REQUEST_LOGIN: 'REQUEST_LOGIN',
-  SAVE_TOKEN: 'SAVE_TOKEN',
+  SAVE_USER: 'SAVE_USER',
   GET_AUDIO_FEATURES: 'GET_AUDIO_FEATURES',
   CURRENTIZE_MIX: 'CURRENTIZE_MIX',
   MAKE_MIX: 'MAKE_POST',
@@ -21,11 +21,11 @@ const SPOTIFY_URL = 'https://api.spotify.com/v1';
  * Saves the user authentication token to redux store and configures axios headers.
  * @param {String} token
  */
-export function saveToken(token) {
-  axios.defaults.headers.common = { Authorization: `Bearer ${token}` };
+export function saveUser(user) {
+  axios.defaults.headers.common = { Authorization: `Bearer ${user.token}` };
   return {
-    type: ActionTypes.SAVE_TOKEN,
-    payload: token,
+    type: ActionTypes.SAVE_USER,
+    payload: user,
   };
 }
 
@@ -33,7 +33,7 @@ export function saveToken(token) {
  * Requests server to serve login process.
  */
 export function requestLogin() {
-  return (dispatch) => {
+  return () => {
     axios.get(`${ROOT_URL}/login`).then((response) => {
       console.log(response);
     }).catch((error) => {
@@ -89,6 +89,7 @@ export function currentizeMix(id, history) {
 
 /**
  * Creates a new mix.
+ * @param {Object} mix
  */
 export function createMix(mix) {
   return (dispatch) => {
@@ -102,6 +103,8 @@ export function createMix(mix) {
 
 /**
  * Makes changes to a mix.
+ * @param {Object} mixUpdate
+ * @param {String} id
  */
 export function updateMix(mixUpdate, id) {
   return (dispatch) => {
@@ -115,6 +118,8 @@ export function updateMix(mixUpdate, id) {
 
 /**
  * Removes a mix.
+ * @param {String} id
+ * @param {Object} history
  */
 export function removeMix(id, history) {
   return (dispatch) => {
