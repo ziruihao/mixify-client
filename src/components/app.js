@@ -10,7 +10,7 @@ import Mixes from '../containers/mixes';
 import Mixer from '../containers/mixer';
 
 
-const FallBack = (props) => {
+const FallBack = () => {
   return <div>URL Not Found</div>;
 };
 
@@ -24,7 +24,8 @@ const App = (props) => {
       <Router>
         <div>
           <Switch>
-            <Route exact path="/" component={Mixes} />
+            <Route exact path="/" component={Player} />
+            <Route exact path="/player" component={Player} />
             <Route exact path="/mixes" component={Mixes} />
             <Route path="/mixes/:mixID" component={Mixer} />
             <Route component={FallBack} />

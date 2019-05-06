@@ -1,16 +1,19 @@
 import React from 'react';
 import { connect } from 'react-redux';
-// import { withRouter } from 'react-router-dom';
 
 // Grommet
 import { Button } from 'grommet';
 
+import axios from 'axios';
+
 // actions
-import { requestLogin, saveToken } from '../actions';
+import { requestLogin, saveUser } from '../actions';
+
 
 class Login extends React.Component {
   constructor(props) {
     super(props);
+    this.SPOTIFY_URL = 'https://api.spotify.com/v1';
     this.state = {
       token: '',
     };
@@ -21,7 +24,22 @@ class Login extends React.Component {
    */
   requestLogin = () => {
     // this.props.requestLogin();
-    this.props.saveToken(this.state.token);
+    const user = {
+      name: '',
+      id: '',
+      token: this.state.token,
+    };
+    const config = {
+      headers: { Authorization: `Bearer ${this.state.token}` },
+    };
+    axios.get(`${this.SPOTIFY_URL}/me`, config).then((response) => {
+      console.log(response.data);
+      user.name = response.data.display_name;
+      user.id = response.data.id;
+    }).catch((error) => {
+      console.log(error);
+    });
+    this.props.saveUser(user);
   }
 
   render() {
@@ -31,7 +49,7 @@ class Login extends React.Component {
           <h2>Now Playing</h2>
         </div>
         <p className="App-intro">
-        Enter your Spotify access token. Get it from{' '}
+          Enter your Spotify access token. Get it from{' '}
           <a href="https://beta.developer.spotify.com/documentation/web-playback-sdk/quick-start/#authenticating-with-spotify" target="_blank" rel="noopener noreferrer">
           here
           </a>.
@@ -53,4 +71,4 @@ const mapStateToProps = state => (
   }
 );
 
-export default (connect(mapStateToProps, { requestLogin, saveToken })(Login));
+export default (connect(mapStateToProps, { requestLogin, saveUser })(Login));
