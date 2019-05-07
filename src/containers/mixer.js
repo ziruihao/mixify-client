@@ -4,6 +4,11 @@ import { withRouter } from 'react-router-dom';
 
 import axios from 'axios';
 
+// Grommet
+import {
+  Button, Heading, Text, TextInput, Box, Grid,
+} from 'grommet';
+
 // actions imports
 import { updateMix, currentizeMix } from '../actions';
 
@@ -15,6 +20,7 @@ class Mixer extends React.Component {
     super(props);
     this.SPOTIFY_URL = 'https://api.spotify.com/v1';
     this.state = {
+      firstRefresh: false,
       newToken: '',
       collaborators: [],
       mixUpdate: {
@@ -25,9 +31,16 @@ class Mixer extends React.Component {
     };
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this.props.currentizeMix(this.props.match.params.mixID, this.props.history);
-    this.refreshCollaboratorData();
+  }
+
+  componentDidUpdate() {
+    if (!(this.props.mix === null) && !this.state.firstRefresh) {
+      this.refreshCollaboratorData();
+      console.log('refreshing');
+      this.state.firstRefresh = true;
+    }
   }
 
   // sleep time expects milliseconds
@@ -37,10 +50,11 @@ class Mixer extends React.Component {
 
 
   refreshCollaboratorData = () => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const collaborators = [];
       for (let i = 0; i < this.props.mix.collaboratorTokens.length; i += 1) {
-        this.sleep(1000).then(() => {
+        this.sleep(0).then(() => {
+          console.log(i);
           const collaborator = {
             name: '',
             id: '',
@@ -94,7 +108,7 @@ class Mixer extends React.Component {
       this.setState({
         collaborators,
       });
-      resolve();
+      return resolve();
     });
   }
 
@@ -117,41 +131,42 @@ class Mixer extends React.Component {
    * Mixes the playlist!
    */
   mixx = () => {
-    this.refreshCollaboratorData();
-    this.sleep(3000).then(() => {
-      console.log('begining');
-      let playlistID = '';
-      const config = {
-        headers: {
-          Authorization: `Bearer ${this.props.mixOwner.token}`,
-          'Content-Type': 'application/json',
-        },
-      };
-      let body = {
-        name: 'Mixx',
-        description: 'For the aux king.',
-      };
-      axios.post(`${this.SPOTIFY_URL}/users/${this.props.mixOwner.id}/playlists`, body, config).then((response) => {
-        playlistID = response.data.id;
-
-        let mixTracks = [];
-
-        this.state.collaborators.forEach((collaborator) => {
-          mixTracks = collaborator.topTracks.concat(mixTracks);
-        });
-        console.log(`MIX TRACKS: ${mixTracks}`);
-        const mixTracksURIs = mixTracks.map(track => track.uri);
-        body = {
-          uris: mixTracksURIs,
+    this.refreshCollaboratorData().then(() => {
+      this.sleep(3000).then(() => {
+        console.log('this should happen after the promise returns!');
+        let playlistID = '';
+        const config = {
+          headers: {
+            Authorization: `Bearer ${this.props.mixOwner.token}`,
+            'Content-Type': 'application/json',
+          },
         };
-        console.log(body);
-        axios.post(`${this.SPOTIFY_URL}/playlists/${playlistID}/tracks`, body, config).then((response2) => {
-          console.log(response2);
+        let body = {
+          name: 'Mixx!',
+          description: 'For the aux king.',
+        };
+        axios.post(`${this.SPOTIFY_URL}/users/${this.props.mixOwner.id}/playlists`, body, config).then((response) => {
+          playlistID = response.data.id;
+
+          let mixTracks = [];
+
+          this.state.collaborators.forEach((collaborator) => {
+            mixTracks = collaborator.topTracks.concat(mixTracks);
+          });
+          console.log(`MIX TRACKS: ${mixTracks}`);
+          const mixTracksURIs = mixTracks.map(track => track.uri);
+          body = {
+            uris: mixTracksURIs,
+          };
+          console.log(body);
+          axios.post(`${this.SPOTIFY_URL}/playlists/${playlistID}/tracks`, body, config).then((response2) => {
+            console.log(response2);
+          }).catch((error) => {
+            console.log(error);
+          });
         }).catch((error) => {
           console.log(error);
         });
-      }).catch((error) => {
-        console.log(error);
       });
     });
   }
@@ -160,24 +175,41 @@ class Mixer extends React.Component {
   render() {
     if (this.props.mix === null) {
       return (<div>404: post not found</div>);
+    } else if (!this.state.firstRefresh) {
+      return (<div>loading</div>);
     } else {
-      console.log(this.props.mix);
-      const users = this.props.mix.collaboratorTokens.map(token => <p key={token}>{token}</p>);
+      console.log(this.state.collaborators);
+      console.log(this.state.collaborators.map(collaborator => collaborator.name));
       return (
-        <div id="mix">
-          <div>
-            <input placeholder="Add mix collaborator via token:" value={this.state.newToken} onChange={event => this.setState({ newToken: event.target.value })} />
-            <button type="button" onClick={this.addCollaborator}>Add User</button>
-          </div>
-          <div>
-            <p>Users:</p>
-            {users}
-          </div>
-          <div>
-            <button type="button" onClick={this.mixx}>Mix</button>
-          </div>
-          <Player />
-        </div>
+        <Box id="mix" pad="medium">
+          <Grid
+            fill
+            rows={['400px', '100px']}
+            columns={['300px', '600px']}
+            gap="small"
+            areas={[
+              { name: 'collaborators', start: [0, 0], end: [0, 0] },
+              { name: 'mixer', start: [1, 0], end: [1, 0] },
+              { name: 'player', start: [0, 1], end: [1, 1] },
+            ]}
+          >
+            <Box gridArea="collaborators" border={{ size: 'medium', color: 'brand' }} pad="large" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
+              <Heading color="brand" level="3">Collaborators</Heading>
+              <TextInput placeholder="token please" value={this.state.newToken} onChange={event => this.setState({ newToken: event.target.value })} />
+              <Button primary color="brand" hoverIndicator="true" onClick={this.addCollaborator} label="Add" />
+              <p>Users:</p>
+              <Box align="start" justify="around">
+                hi {}
+              </Box>
+            </Box>
+            <Box gridArea="mixer" border={{ size: 'medium', color: 'brand' }} pad="large" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
+              <Button primary color="brand" onClick={this.mixx} label="Mix" />
+            </Box>
+            <Box gridArea="player" border={{ size: 'medium', color: 'brand' }} pad="large" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
+              <Player />
+            </Box>
+          </Grid>
+        </Box>
       );
     }
   }

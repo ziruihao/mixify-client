@@ -80,7 +80,7 @@ export function currentizeMix(id, history) {
   return (dispatch) => {
     axios.get(`${ROOT_URL}/mixes/${id}`).then((response) => {
       dispatch({ type: ActionTypes.CURRENTIZE_MIX, payload: response.data });
-      history.push(`/mixes/${id}`);
+      history.push(`/${id}`);
     }).catch((error) => {
       console.log(error);
     });
@@ -108,6 +108,7 @@ export function createMix(mix) {
  */
 export function updateMix(mixUpdate, id) {
   return (dispatch) => {
+    console.log(ROOT_URL);
     axios.put(`${ROOT_URL}/mixes/${id}`, mixUpdate).then((response) => {
       dispatch({ type: ActionTypes.UPDATE_MIX, payload: response.data });
     }).catch((error) => {

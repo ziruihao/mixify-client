@@ -2,7 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 // Grommet
-import { Button } from 'grommet';
+import {
+  Button, Heading, Text, TextInput, Box,
+} from 'grommet';
 
 // Axios
 import axios from 'axios';
@@ -45,23 +47,19 @@ class Login extends React.Component {
 
   render() {
     return (
-      <div>
-        <div className="App-header">
-          <h2>Now Playing</h2>
-        </div>
-        <p className="App-intro">
-          Enter your Spotify access token. Get it from{' '}
+      <Box alignSelf="center" border={{ size: 'medium', color: 'brand' }} pad="medium" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large" width="500px" height="300px" id="login">
+        <Heading color="brand">Mixify</Heading>
+        <Text>
+            Enter your Spotify access token. Get it from{' '}
           <a href="https://mixify-server.herokuapp.com/login" target="_blank" rel="noopener noreferrer">
-          here
+              here
           </a>.
-        </p>
-        <p>
-          <input type="text" value={this.state.token} onChange={event => this.setState({ token: event.target.value })} />
-        </p>
-        <p>
-          <Button label="Go" onClick={this.requestLogin} />
-        </p>
-      </div>
+        </Text>
+        <Text>
+          <TextInput value={this.state.token} placeholder="your token please" onChange={event => this.setState({ token: event.target.value })} />
+        </Text>
+        <Button primary color="brand" hoverIndicator="true" label="Go" onClick={this.requestLogin} />
+      </Box>
     );
   }
 }

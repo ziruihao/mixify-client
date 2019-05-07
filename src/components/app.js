@@ -15,7 +15,7 @@ const FallBack = () => {
 };
 
 const App = (props) => {
-  if (props.token === null) {
+  if ((props.token === null)) {
     return (
       <Login />
     );
@@ -24,10 +24,9 @@ const App = (props) => {
       <Router>
         <div>
           <Switch>
-            <Route exact path="/" component={Player} />
+            <Route exact path="/" component={Mixes} />
             <Route exact path="/player" component={Player} />
-            <Route exact path="/mixes" component={Mixes} />
-            <Route path="/mixes/:mixID" component={Mixer} />
+            <Route path="/:mixID" component={Mixer} />
             <Route component={FallBack} />
           </Switch>
         </div>
