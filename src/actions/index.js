@@ -11,11 +11,16 @@ export const ActionTypes = {
   FETCH_MIXES: 'FETCH_MIXES',
 };
 
+
+const client_id = process.env.CLIENT_ID; // Your client id
 // custom-built authentication node.js mixify-server
-// const ROOT_URL = 'https://mixify-server.herokuapp.com';
-const ROOT_URL = 'http://localhost:9090';
+const ROOT_URL = 'https://mixify-server.herokuapp.com';
+// const ROOT_URL = 'http://localhost:9090';
+const redirect_uri = 'https://mixify-server.herokuapp.com/callback'; // Your redirect uri
+
 // Spotify's API
 const SPOTIFY_URL = 'https://api.spotify.com/v1';
+const SPOTIFY_AUTH_URL = 'https://accounts.spotify.com/authorize';
 
 /**
  * Saves the user authentication token to redux store and configures axios headers.
@@ -26,19 +31,6 @@ export function saveUser(user) {
   return {
     type: ActionTypes.SAVE_USER,
     payload: user,
-  };
-}
-
-/**
- * Requests mixify-server to serve login process.
- */
-export function requestLogin() {
-  return () => {
-    axios.get(`${ROOT_URL}/login`).then((response) => {
-      console.log(response);
-    }).catch((error) => {
-      console.log(error);
-    });
   };
 }
 

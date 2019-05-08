@@ -7,6 +7,8 @@ import {
   Button, Heading, Text, TextInput, Box, Grid,
 } from 'grommet';
 
+import Login from './login';
+
 // actions
 import { fetchMixes, currentizeMix, createMix } from '../actions';
 
@@ -43,29 +45,33 @@ class Mixes extends React.Component {
 
   render() {
     const mixes = this.props.mixes.all.map(mix => <MixPreview goTo={this.goTo} key={mix.id} mix={mix} />);
-    return (
-      <Box id="mixes" pad="medium">
-        <Grid
-          fill
-          rows={['600px']}
-          columns={['400px', '800px']}
-          gap="small"
-          areas={[
-            { name: 'input', start: [0, 0], end: [0, 0] },
-            { name: 'mixList', start: [1, 0], end: [1, 0] },
-          ]}
-        >
-          <Box gridArea="input" border={{ size: 'medium', color: 'brand' }} pad="large" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
-            <Heading color="brand">Make a mix.</Heading>
-            <TextInput placeholder="name" value={this.state.newMixName} onChange={event => this.setState({ newMixName: event.target.value })} />
-            <Button primary color="brand" hoverIndicator="true" label="Create" onClick={this.makeNewMix} />
-          </Box>
-          <Box gridarea="mixList" border={{ size: 'medium', color: 'brand' }} pad="medium" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
-            {mixes}
-          </Box>
-        </Grid>
-      </Box>
-    );
+    if (this.props.owner.token === null) {
+      return (<Login />);
+    } else {
+      return (
+        <Box id="mixes" pad="medium">
+          <Grid
+            fill
+            rows={['600px']}
+            columns={['400px', '800px']}
+            gap="small"
+            areas={[
+              { name: 'input', start: [0, 0], end: [0, 0] },
+              { name: 'mixList', start: [1, 0], end: [1, 0] },
+            ]}
+          >
+            <Box gridArea="input" border={{ size: 'medium', color: 'brand' }} pad="large" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
+              <Heading color="brand">Make a mix.</Heading>
+              <TextInput placeholder="name" value={this.state.newMixName} onChange={event => this.setState({ newMixName: event.target.value })} />
+              <Button primary color="brand" hoverIndicator="true" label="Create" onClick={this.makeNewMix} />
+            </Box>
+            <Box gridarea="mixList" border={{ size: 'medium', color: 'brand' }} pad="medium" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
+              {mixes}
+            </Box>
+          </Grid>
+        </Box>
+      );
+    }
   }
 }
 

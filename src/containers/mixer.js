@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
 import axios from 'axios';
+import async from 'async';
 
 // Grommet
 import {
@@ -13,7 +14,6 @@ import {
 import { updateMix, currentizeMix } from '../actions';
 
 import Player from './player';
-
 
 class Mixer extends React.Component {
   constructor(props) {
@@ -29,6 +29,7 @@ class Mixer extends React.Component {
         tracks: [],
       },
     };
+    this.testFunction = this.testFunction.bind(this);
   }
 
   componentWillMount() {
@@ -47,7 +48,6 @@ class Mixer extends React.Component {
   sleep = (time) => {
     return new Promise(resolve => setTimeout(resolve, time));
   }
-
 
   refreshCollaboratorData = () => {
     return new Promise((resolve) => {
@@ -171,8 +171,13 @@ class Mixer extends React.Component {
     });
   }
 
+  async testFunction() {
+    console.log(this.SPOTIFY_URL);
+    return null;
+  }
 
   render() {
+    this.testFunction();
     if (this.props.mix === null) {
       return (<div>404: post not found</div>);
     } else if (!this.state.firstRefresh) {
