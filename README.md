@@ -5,6 +5,8 @@ Try it out here: http://mixify-client.surge.sh/
 
 See server repo here: https://github.com/ziruihao/mixify-server
 
+Note: generated tokens are temporary and expire within an hour.
+
 ### Features
 #### Spotify Authentication
 
