@@ -15,7 +15,7 @@ The app authenticates with Spotify. The main user is the 'owner' of the mixes th
 
 Collaborators can join the 'Mix' to get their music tastes added into the playlist! Right now, the authentication process to add new users is tricky. Essentially, they have to follow a link (in incognito mode, without cookies) to sign in to their own Spotify account, and receive a temporary token on callback, which they then paste into the client app. I plan to make this absolutely seamless by porting the app data into a database and allowing multi-way connections to a 'Mix room.'
 
-![alt text](https://github.com/ziruihao/mixify-client/blob/master/src/img/collab.png)
+![alt text](https://github.com/ziruihao/mixify-client/blob/master/src/img/collabs.png)
 
 #### Music Taste Mixer
 
