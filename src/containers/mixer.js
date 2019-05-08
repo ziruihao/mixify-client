@@ -27,6 +27,7 @@ class Mixer extends React.Component {
       collaborators: [],
       collaboratorTokens: [this.props.mixOwner.token],
       tracks: [],
+      playlistID: '',
     };
     this.addCollaborator = this.addCollaborator.bind(this);
     this.refreshCollaboratorData = this.refreshCollaboratorData.bind(this);
@@ -51,12 +52,20 @@ class Mixer extends React.Component {
     const config = {
       headers: { Authorization: `Bearer ${this.props.mixOwner.token}` },
     };
-    const body = {
+    let body = {
       device_ids: [device_id],
       play: true,
     };
     axios.put(`${this.SPOTIFY_URL}/me/player`, body, config).then((response) => {
       console.log(response);
+      body = {
+        context_uri: `spotify:user:paperrapper:playlist:${this.state.playlistID}`,
+      };
+      axios.put(`${this.SPOTIFY_URL}/me/player/play`, body, config).then((response2) => {
+        console.log(response2);
+      }).catch((error) => {
+        console.log(error);
+      });
     }).catch((error) => {
       console.log(error);
     });
@@ -151,7 +160,6 @@ class Mixer extends React.Component {
    */
   async mixx() {
     await this.refreshCollaboratorData();
-    let playlistID = '';
     console.log('begining to mix');
     // sets up axios headers with the necessary tokens
     const config = {
@@ -167,7 +175,7 @@ class Mixer extends React.Component {
       description: 'For the aux king.',
     };
     axios.post(`${this.SPOTIFY_URL}/users/${this.props.mixOwner.id}/playlists`, body, config).then((response) => {
-      playlistID = response.data.id;
+      this.setState({ playlistID: response.data.id });
 
       // begins generating the local playlist
       let mixTracks = [];
@@ -184,10 +192,9 @@ class Mixer extends React.Component {
       body = {
         uris: mixTracksURIs,
       };
-      console.log(body);
 
       // posts the new local playlist to the Spotify API
-      axios.post(`${this.SPOTIFY_URL}/playlists/${playlistID}/tracks`, body, config).then(() => {
+      axios.post(`${this.SPOTIFY_URL}/playlists/${this.state.playlistID}/tracks`, body, config).then(() => {
         // yay!
         console.log('Mix successful!');
       }).catch((error) => {
@@ -196,6 +203,14 @@ class Mixer extends React.Component {
     }).catch((error) => {
       console.log(error);
     });
+  }
+
+  renderPlayer = () => {
+    if (this.state.playlistID === '') {
+      return (<div>Make a Mix to start playing!</div>);
+    } else {
+      return (<Player api={this.startPlayback} />);
+    }
   }
 
   render() {
@@ -240,7 +255,7 @@ class Mixer extends React.Component {
               </Box>
             </Box>
             <Box gridArea="player" border={{ size: 'medium', color: 'brand' }} pad="large" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
-              <Player api={this.startPlayback} />
+              {this.renderPlayer()}
             </Box>
           </Grid>
         </Box>

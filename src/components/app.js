@@ -28,7 +28,7 @@ const App = (props) => {
         <div>
           <Switch>
             <Route path="/auth/:token" component={TokenReceiver} />
-            <Route exact path="/" component={Player} />
+            <Route exact path="/" component={Mixer} />
             <Route exact path="/player" component={Player} />
             <Route component={FallBack} />
           </Switch>

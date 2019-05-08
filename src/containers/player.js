@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
 // Grommet
-import { Button } from 'grommet';
+import { Button, Box, Text } from 'grommet';
 
 // actions
 import { getAudioFeatures } from '../actions';
@@ -88,15 +88,15 @@ class Player extends React.Component {
     } else {
       return (
         <div>
-          <p>This song is in {this.musicKeyMapper(this.props.audioFeatures.key)} {this.props.audioFeatures.mode === 0 ? 'minor' : 'Major'}.</p>
-          <p>Danciness: {this.props.audioFeatures.danceability}</p>
+          <Text>This song is in {this.musicKeyMapper(this.props.audioFeatures.key)} {this.props.audioFeatures.mode === 0 ? 'minor' : 'Major'}.</Text>
+          {/* <p>Danciness: {this.props.audioFeatures.danceability}</p>
           <p>acousticness: {this.props.audioFeatures.acousticness}</p>
           <p>energy: {this.props.audioFeatures.energy}</p>
           <p>instrumentalness: {this.props.audioFeatures.instrumentalness}</p>
           <p>liveness: {this.props.audioFeatures.liveness}</p>
           <p>loudness: {this.props.audioFeatures.loudness}</p>
           <p>speechiness: {this.props.audioFeatures.speechiness}</p>
-          <p>valence: {this.props.audioFeatures.valence}</p>
+          <p>valence: {this.props.audioFeatures.valence}</p> */}
         </div>
       );
     }
@@ -157,15 +157,20 @@ class Player extends React.Component {
       );
     } else {
       return (
-        <div>
-          <p>Album: {this.state.playerState.track_window.current_track.album.name}</p>
-          <p>Track: {this.state.playerState.track_window.current_track.name}</p>
-          <p>Artists: {this.state.playerState.track_window.current_track.artists.map((artist) => { return artist.name; })}</p>
-          <button type="button" onClick={() => this.player.previousTrack().then()}>Previous</button>
-          <button type="button" onClick={() => this.player.togglePlay().then()}>{this.state.playerState.paused ? 'Play' : 'Pause'}</button>
-          <button type="button" onClick={() => this.player.nextTrack().then()}>Next</button>
-          {this.renderIfHasAudioFeatures()}
-        </div>
+        <Box direction="row" justify="around" fill>
+          <Box justify="around" align="center" fill>
+            <Box direction="row" justify="between" fill>
+              <Text>{this.state.playerState.track_window.current_track.name}</Text>
+              <Text>{this.state.playerState.track_window.current_track.artists.map((artist) => { return artist.name; })}</Text>
+            </Box>
+            {this.renderIfHasAudioFeatures()}
+          </Box>
+          <Box direction="row">
+            <Button type="button" onClick={() => this.player.previousTrack().then()} label="Previous" />
+            <Button type="button" onClick={() => this.player.togglePlay().then()} label={this.state.playerState.paused ? 'Play' : 'Pause'} />
+            <Button type="button" onClick={() => this.player.nextTrack().then()} label="Next" />
+          </Box>
+        </Box>
       );
     }
   }
