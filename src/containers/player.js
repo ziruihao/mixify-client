@@ -4,6 +4,9 @@ import { withRouter } from 'react-router-dom';
 
 // Grommet
 import { Button, Box, Text } from 'grommet';
+import {
+  PlayFill, PauseFill, FastForward, Rewind, Spotify,
+} from 'grommet-icons';
 
 // actions
 import { getAudioFeatures } from '../actions';
@@ -87,8 +90,8 @@ class Player extends React.Component {
       return null;
     } else {
       return (
-        <div>
-          <Text>This song is in {this.musicKeyMapper(this.props.audioFeatures.key)} {this.props.audioFeatures.mode === 0 ? 'minor' : 'Major'}.</Text>
+        <Box>
+          <Text size="small">This song is in {this.musicKeyMapper(this.props.audioFeatures.key)} {this.props.audioFeatures.mode === 0 ? 'minor' : 'Major'}.</Text>
           {/* <p>Danciness: {this.props.audioFeatures.danceability}</p>
           <p>acousticness: {this.props.audioFeatures.acousticness}</p>
           <p>energy: {this.props.audioFeatures.energy}</p>
@@ -97,7 +100,7 @@ class Player extends React.Component {
           <p>loudness: {this.props.audioFeatures.loudness}</p>
           <p>speechiness: {this.props.audioFeatures.speechiness}</p>
           <p>valence: {this.props.audioFeatures.valence}</p> */}
-        </div>
+        </Box>
       );
     }
   }
@@ -153,22 +156,23 @@ class Player extends React.Component {
   render() {
     if (this.state.playerState === null) {
       return (
-        <Button label="Play" onClick={() => { this.props.startPlayback(this.state.device_id); this.player.setVolume(0.5); }} />
+        <Button alignSelf="center" label="Play" primary color="brand" onClick={() => { this.props.startPlayback(this.state.device_id); this.player.setVolume(0.5); }} />
       );
     } else {
       return (
         <Box direction="row" justify="around" fill>
-          <Box justify="around" align="center" fill>
-            <Box direction="row" justify="between" fill>
-              <Text>{this.state.playerState.track_window.current_track.name}</Text>
-              <Text>{this.state.playerState.track_window.current_track.artists.map((artist) => { return artist.name; })}</Text>
+          <Box direction="row" justify="center" align="around" fill>
+            {/* <Spotify size="medium" /> */}
+            <Box justify="center" align="start" gap="small" fill>
+              <Text weight="bold" size="medium">{this.state.playerState.track_window.current_track.name}</Text>
+              <Text weight="light" size="small">{this.state.playerState.track_window.current_track.artists.map((artist) => { return artist.name; })}</Text>
             </Box>
             {this.renderIfHasAudioFeatures()}
           </Box>
-          <Box direction="row">
-            <Button type="button" onClick={() => this.player.previousTrack().then()} label="Previous" />
-            <Button type="button" onClick={() => this.player.togglePlay().then()} label={this.state.playerState.paused ? 'Play' : 'Pause'} />
-            <Button type="button" onClick={() => this.player.nextTrack().then()} label="Next" />
+          <Box direction="row" justify="center" align="center" gap="medium" fill>
+            <Button type="button" onClick={() => this.player.previousTrack().then()} icon={<Rewind color="brand" />} />
+            <Button type="button" onClick={() => this.player.togglePlay().then()} icon={this.state.playerState.paused ? <PlayFill color="brand" /> : <PauseFill color="brand" />} color="brand" />
+            <Button type="button" onClick={() => this.player.nextTrack().then()} icon={<FastForward color="brand" />} />
           </Box>
         </Box>
       );

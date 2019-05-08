@@ -23,6 +23,7 @@ class Mixer extends React.Component {
     this.TOKEN_URL = 'https://mixify-server.herokuapp.com/getToken';
     this.state = {
       loaded: false,
+      begunMixCreation: false,
       newToken: '',
       collaborators: [],
       collaboratorTokens: [this.props.mixOwner.token],
@@ -46,7 +47,7 @@ class Mixer extends React.Component {
     return new Promise(resolve => setTimeout(resolve, time));
   }
 
-  startPlayback = (device_id) => {
+  startPlayback = async (device_id) => {
     // sets the config with authorization of current collaborator's token
     console.log(device_id);
     const config = {
@@ -56,19 +57,34 @@ class Mixer extends React.Component {
       device_ids: [device_id],
       play: true,
     };
-    axios.put(`${this.SPOTIFY_URL}/me/player`, body, config).then((response) => {
-      console.log(response);
-      body = {
-        context_uri: `spotify:user:paperrapper:playlist:${this.state.playlistID}`,
-      };
-      axios.put(`${this.SPOTIFY_URL}/me/player/play`, body, config).then((response2) => {
-        console.log(response2);
-      }).catch((error) => {
-        console.log(error);
-      });
-    }).catch((error) => {
+
+    try {
+      await axios.put(`${this.SPOTIFY_URL}/me/player`, body, config);
+    } catch (error) {
       console.log(error);
-    });
+    }
+
+    body = {
+      context_uri: `spotify:user:paperrapper:playlist:${this.state.playlistID}`,
+    };
+
+    try {
+      await axios.put(`${this.SPOTIFY_URL}/me/player/play`, body, config);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  /**
+   * Shuffled an array.
+   */
+  shuffle = (array) => {
+    const shuffledArray = Object.assign([], array);
+    for (let i = array.length - 1; i > 0; i -= 1) {
+      let j = Math.floor(Math.random() * (i + 1));
+      [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+    }
+    return shuffledArray;
   }
 
   /**
@@ -82,7 +98,6 @@ class Mixer extends React.Component {
     });
     // refreshes collaborator data
     await this.refreshCollaboratorData();
-    console.log('is this running?');
   }
 
   /**
@@ -106,6 +121,9 @@ class Mixer extends React.Component {
    * @param {Number} i
    */
   async refreshCollaboratorDataHelper(i) {
+    // sleep is necessary to not get rejected by Spotify API for too many requests too fast
+    await this.sleep(10);
+
     // creates a new collaborator template
     const collaborator = {
       name: '',
@@ -113,45 +131,44 @@ class Mixer extends React.Component {
       token: this.state.collaboratorTokens[i],
       topTracks: [],
     };
-    // sleep is necessary to not get rejected by Spotify API for too many requests too fast
-    await this.sleep(10).then(() => {
-      // sets the config with authorization of current collaborator's token
-      const config = {
-        headers: { Authorization: `Bearer ${collaborator.token}` },
-      };
 
-      // retrieves collaborator account data
-      axios.get(`${this.SPOTIFY_URL}/me`, config).then((response) => {
-        collaborator.name = response.data.display_name;
-        collaborator.id = response.data.id;
-      }).catch((error) => {
-        console.log(error);
-      });
+    // sets the config with authorization of current collaborator's token
+    const config = {
+      headers: { Authorization: `Bearer ${collaborator.token}` },
+    };
 
-      // retrieves collaborator musical preferences
-      axios.get(`${this.SPOTIFY_URL}/me/top/tracks?limit=15`, config).then((response) => {
-        response.data.items.forEach((track) => {
-          const tempTrack = {
-            name: '',
-            id: '',
-            uri: '',
-            popularity: null,
-            albumName: '',
-            artists: [],
-          };
-          tempTrack.name = track.name;
-          tempTrack.id = track.id;
-          tempTrack.uri = track.uri;
-          tempTrack.popularity = track.popularity;
-          tempTrack.albumName = track.album.name;
-          tempTrack.artists = track.artists.map(artist => artist.name);
-          collaborator.topTracks.push(tempTrack);
-        });
-      }).catch((error) => {
-        console.log(error);
+    // retrieves collaborator account data
+    try {
+      const response = await axios.get(`${this.SPOTIFY_URL}/me`, config);
+      collaborator.name = response.data.display_name;
+      collaborator.id = response.data.id;
+    } catch (error) {
+      console.log(error);
+    }
+
+    // retrieves collaborator musical preferences
+    try {
+      const response = await axios.get(`${this.SPOTIFY_URL}/me/top/tracks?limit=15`, config);
+      response.data.items.forEach((track) => {
+        const tempTrack = {
+          name: '',
+          id: '',
+          uri: '',
+          popularity: null,
+          albumName: '',
+          artists: [],
+        };
+        tempTrack.name = track.name;
+        tempTrack.id = track.id;
+        tempTrack.uri = track.uri;
+        tempTrack.popularity = track.popularity;
+        tempTrack.albumName = track.album.name;
+        tempTrack.artists = track.artists.map(artist => artist.name);
+        collaborator.topTracks.push(tempTrack);
       });
-      console.log(collaborator.topTracks);
-    });
+    } catch (error) {
+      console.log(error);
+    }
     return collaborator;
   }
 
@@ -174,52 +191,61 @@ class Mixer extends React.Component {
       name: 'Mixify',
       description: 'For the aux king.',
     };
-    axios.post(`${this.SPOTIFY_URL}/users/${this.props.mixOwner.id}/playlists`, body, config).then((response) => {
+    try {
+      const response = await axios.post(`${this.SPOTIFY_URL}/users/${this.props.mixOwner.id}/playlists`, body, config);
       this.setState({ playlistID: response.data.id });
-
-      // begins generating the local playlist
-      let mixTracks = [];
-
-      this.state.collaborators.forEach((collaborator) => {
-        collaborator.topTracks.forEach((track) => {
-          mixTracks.push(track);
-        });
-      });
-      this.setState({ tracks: mixTracks });
-      const mixTracksURIs = this.state.tracks.map(track => track.uri);
-
-      // sets up the axios request body with the local playlist to be sent into Spotify API
-      body = {
-        uris: mixTracksURIs,
-      };
-
-      // posts the new local playlist to the Spotify API
-      axios.post(`${this.SPOTIFY_URL}/playlists/${this.state.playlistID}/tracks`, body, config).then(() => {
-        // yay!
-        console.log('Mix successful!');
-      }).catch((error) => {
-        console.log(error);
-      });
-    }).catch((error) => {
+    } catch (error) {
       console.log(error);
+    }
+
+    // begins generating the local playlist
+    let mixTracks = [];
+
+    this.state.collaborators.forEach((collaborator) => {
+      collaborator.topTracks.forEach((track) => {
+        mixTracks.push(track);
+      });
     });
+
+    this.setState({ tracks: this.shuffle(mixTracks) });
+    const mixTracksURIs = this.state.tracks.map(track => track.uri);
+
+    // sets up the axios request body with the local playlist to be sent into Spotify API
+    body = {
+      uris: mixTracksURIs,
+    };
+
+    // posts the new local playlist to the Spotify API
+    try {
+      await axios.post(`${this.SPOTIFY_URL}/playlists/${this.state.playlistID}/tracks`, body, config);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   renderPlayer = () => {
     if (this.state.playlistID === '') {
-      return (<Heading color="brand">Make a Mix to start playing!</Heading>);
+      return (<Heading alignSelf="center" color="brand" textAlign="center" level="5">Make a Mix to start playing!</Heading>);
     } else {
       return (<Player startPlayback={this.startPlayback} />);
     }
   }
 
+  renderTracks = () => {
+    if (this.state.playlistID === '') {
+      return (<Box fill justify="center" align="center"><Loader type="Puff" height={90} width={90} color="#7D4CDB" /></Box>);
+    } else {
+      const tracks = this.state.tracks.map(track => <Box key={track.id} flex="grow" round="medium" direction="row" justify="between" align="center"><Text color="brand" textAlign="center" size="small" weight="bold">{track.name}</Text><Text color="brand" textAlign="center" size="small">{track.artists[0]}</Text></Box>);
+      return (tracks);
+    }
+  }
+
   render() {
     if (!this.state.loaded || this.props.mixOwner.name === null) {
-      return (<Loader type="Puff" height={200} color="#7D4CDB" width={200} />);
+      return (<Loader type="Puff" height={200} width={200} color="#7D4CDB" />);
     } else {
       console.log(this.state.tracks);
-      const collaborators = this.state.collaborators.map(collaborator => <Box key={collaborator.token} margin="small" flex="grow" pad="small" gap="small" round="medium" justify="center" align="center"><Text color="accent-4" textAlign="center" size="small">{collaborator.name}</Text></Box>);
-      const tracks = this.state.tracks.map(track => <Box key={track.id} flex="grow" round="medium" direction="row" justify="between" align="center"><Text color="brand" textAlign="center" size="small" weight="bold">{track.name}</Text><Text color="brand" textAlign="center" size="small">{track.artists[0]}</Text></Box>);
+      const collaborators = this.state.collaborators.map(collaborator => <Box key={collaborator.token} pad="small" gap="small" round="medium" justify="evenly" align="stretch"><Text textAlign="start" size="small">{collaborator.name}</Text></Box>);
       return (
         <Box id="mix" pad="medium">
           <Grid
@@ -235,26 +261,27 @@ class Mixer extends React.Component {
           >
             <Box gridArea="collaborators" border={{ size: 'medium', color: 'brand' }} pad="medium" gap="small" animation="fadeIn" justify="start" align="start" elevation="xlarge" round="large">
               <Heading color="brand" level="3">Welcome, {this.props.mixOwner.name}!</Heading>
-              <Heading color="brand" level="5">Mix Collaborators</Heading>
-              <Box align="start" justify="around">
+              <Text color="neutral-2" size="medium" weight="bold">Mix Collaborators</Text>
+              <Box alignContent="start" justify="start" pad={{ left: 'xsmall' }} fill gap="xsmall">
                 {collaborators}
               </Box>
-              <Text size="small" textAlign="center" margin="small">
-                Invite your friends music tastes. To add a friend, get their token from{' '}
+              <Text size="small" textAlign="start">
+                Invite your {'friend\'s'} music tastes. To add a friend, get their token from{' '}
                 <a href={this.TOKEN_URL} target="_blank" rel="noopener noreferrer">
-                  here
+                  here.
                 </a>
+                 Open in incognito.
               </Text>
               <TextInput placeholder="insert token here" value={this.state.newToken} onChange={event => this.setState({ newToken: event.target.value })} />
-              <Button primary color="brand" hoverIndicator="true" onClick={this.addCollaborator} label="Add" />
+              <Button primary color="brand" alignSelf="center" hoverIndicator="true" onClick={this.addCollaborator} label="Add friend" />
             </Box>
-            <Box gridArea="mixer" border={{ size: 'medium', color: 'brand' }} pad="medium" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
-              <Button primary color="brand" onClick={this.mixx} label="Mix" />
-              <Box overflow="scroll" fill="horizontal" gap="small">
-                {tracks}
+            <Box gridArea="mixer" border={{ size: 'medium', color: 'brand' }} pad="medium" gap="medium" animation="fadeIn" justify="start" align="stretch" alignContent="stretch" elevation="xlarge" round="large">
+              <Button primary color="brand" alignSelf="center" onClick={this.mixx} label="Mix it!" />
+              <Box overflow="scroll" fill gap="small" pad={{ horizontal: 'small' }}>
+                {this.renderTracks()}
               </Box>
             </Box>
-            <Box gridArea="player" border={{ size: 'medium', color: 'brand' }} pad="large" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
+            <Box gridArea="player" border={{ size: 'medium', color: 'brand' }} pad={{ horizontal: 'large', vertical: 'medium' }} animation="fadeIn" justify="center" align="stretch" elevation="xlarge" round="large">
               {this.renderPlayer()}
             </Box>
           </Grid>
