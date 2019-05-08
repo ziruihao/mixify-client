@@ -8,6 +8,7 @@ const initialState = {
 const MixReducer = (state = initialState, action) => {
   switch (action.type) {
     case ActionTypes.CURRENTIZE_MIX:
+      console.log(action.payload);
       return (Object.assign({}, state, {
         current: action.payload,
       }));

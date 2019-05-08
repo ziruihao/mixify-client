@@ -7,7 +7,7 @@ import {
   Button, Heading, Text, TextInput, Box, Grid,
 } from 'grommet';
 
-import Login from './login';
+import Login from '../components/login';
 
 // actions
 import { fetchMixes, currentizeMix, createMix } from '../actions';
@@ -29,10 +29,9 @@ class Mixes extends React.Component {
   makeNewMix = () => {
     const newMix = {
       name: this.state.newMixName,
-      users: [],
+      collaboratorTokens: [this.props.mixOwner.token],
       tracks: [],
     };
-    console.log(newMix);
     this.props.createMix(newMix);
   }
 
@@ -45,7 +44,7 @@ class Mixes extends React.Component {
 
   render() {
     const mixes = this.props.mixes.all.map(mix => <MixPreview goTo={this.goTo} key={mix.id} mix={mix} />);
-    if (this.props.owner.token === null) {
+    if (false) {
       return (<Login />);
     } else {
       return (
@@ -77,7 +76,7 @@ class Mixes extends React.Component {
 
 const mapStateToProps = state => (
   {
-    owner: state.auth,
+    mixOwner: state.auth,
     mixes: state.mixes,
   }
 );

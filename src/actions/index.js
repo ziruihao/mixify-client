@@ -14,8 +14,8 @@ export const ActionTypes = {
 
 const client_id = process.env.CLIENT_ID; // Your client id
 // custom-built authentication node.js mixify-server
-const ROOT_URL = 'https://mixify-server.herokuapp.com';
-// const ROOT_URL = 'http://localhost:9090';
+// const ROOT_URL = 'https://mixify-server.herokuapp.com';
+const ROOT_URL = 'http://localhost:9090';
 const redirect_uri = 'https://mixify-server.herokuapp.com/callback'; // Your redirect uri
 
 // Spotify's API
