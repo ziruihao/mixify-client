@@ -153,7 +153,7 @@ class Player extends React.Component {
   render() {
     if (this.state.playerState === null) {
       return (
-        <Button label="Play" onClick={() => { this.props.api(this.state.device_id); this.player.setVolume(0.5); }} />
+        <Button label="Play" onClick={() => { this.props.startPlayback(this.state.device_id); this.player.setVolume(0.5); }} />
       );
     } else {
       return (

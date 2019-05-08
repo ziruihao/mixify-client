@@ -13,7 +13,7 @@ const Login = () => {
       <Text>
             Welcome to Mixify! Create hit playlists that mix your friends music tastes together.
       </Text>
-      <a href="https://mixify-server.herokuapp.com/login" rel="noopener noreferrer">
+      <a href="https://mixify-server.herokuapp.com/authClient" rel="noopener noreferrer">
         <Button primary color="brand" hoverIndicator="true" label="Go" />
       </a>
     </Box>

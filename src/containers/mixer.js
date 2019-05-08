@@ -20,7 +20,7 @@ class Mixer extends React.Component {
   constructor(props) {
     super(props);
     this.SPOTIFY_URL = 'https://api.spotify.com/v1';
-    this.TOKEN_URL = 'https://mixify-server.herokuapp.com/token';
+    this.TOKEN_URL = 'https://mixify-server.herokuapp.com/getToken';
     this.state = {
       loaded: false,
       newToken: '',
@@ -207,9 +207,9 @@ class Mixer extends React.Component {
 
   renderPlayer = () => {
     if (this.state.playlistID === '') {
-      return (<div>Make a Mix to start playing!</div>);
+      return (<Heading color="brand">Make a Mix to start playing!</Heading>);
     } else {
-      return (<Player api={this.startPlayback} />);
+      return (<Player startPlayback={this.startPlayback} />);
     }
   }
 
