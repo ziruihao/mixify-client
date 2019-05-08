@@ -5,7 +5,6 @@ import {
 import { connect } from 'react-redux';
 
 import Player from '../containers/player';
-import Mixes from '../containers/mixes';
 import Mixer from '../containers/mixer';
 import TokenReceiver from '../containers/token-receiver';
 import Login from './login';
@@ -29,9 +28,8 @@ const App = (props) => {
         <div>
           <Switch>
             <Route path="/auth/:token" component={TokenReceiver} />
-            <Route exact path="/" component={Mixes} />
+            <Route exact path="/" component={Player} />
             <Route exact path="/player" component={Player} />
-            <Route path="/:mixID" component={Mixer} />
             <Route component={FallBack} />
           </Switch>
         </div>

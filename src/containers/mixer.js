@@ -1,3 +1,5 @@
+/* eslint-disable prefer-const */
+/* eslint-disable for-direction */
 /* eslint-disable no-await-in-loop */
 import React from 'react';
 import { connect } from 'react-redux';
@@ -10,8 +12,7 @@ import {
   Button, Heading, Text, TextInput, Box, Grid,
 } from 'grommet';
 
-// actions imports
-import { updateMix, currentizeMix } from '../actions';
+import Loader from 'react-loader-spinner';
 
 import Player from './player';
 
@@ -19,15 +20,13 @@ class Mixer extends React.Component {
   constructor(props) {
     super(props);
     this.SPOTIFY_URL = 'https://api.spotify.com/v1';
+    this.TOKEN_URL = 'https://mixify-server.herokuapp.com/token';
     this.state = {
-      firstRefresh: false,
+      loaded: false,
       newToken: '',
       collaborators: [],
-      mixUpdate: {
-        name: this.props.mix.name,
-        collaboratorTokens: [this.props.mixOwner.token],
-        tracks: this.props.mix.tracks,
-      },
+      collaboratorTokens: [this.props.mixOwner.token],
+      tracks: [],
     };
     this.addCollaborator = this.addCollaborator.bind(this);
     this.refreshCollaboratorData = this.refreshCollaboratorData.bind(this);
@@ -35,20 +34,32 @@ class Mixer extends React.Component {
     this.mixx = this.mixx.bind(this);
   }
 
-  componentWillMount() {
-    this.props.currentizeMix(this.props.match.params.mixID, this.props.history);
-  }
-
-  componentDidUpdate() {
-    if (!(this.props.mix === null) && !this.state.firstRefresh) {
-      this.refreshCollaboratorData();
-      console.log('component refreshing');
-      this.state.firstRefresh = true;
-    }
+  async componentWillMount() {
+    await this.refreshCollaboratorData();
+    this.sleep(1500).then(() => { // here to show off the cool loading animation :)
+      this.setState({ loaded: true });
+    });
   }
 
   sleep = (time) => {
     return new Promise(resolve => setTimeout(resolve, time));
+  }
+
+  startPlayback = (device_id) => {
+    // sets the config with authorization of current collaborator's token
+    console.log(device_id);
+    const config = {
+      headers: { Authorization: `Bearer ${this.props.mixOwner.token}` },
+    };
+    const body = {
+      device_ids: [device_id],
+      play: true,
+    };
+    axios.put(`${this.SPOTIFY_URL}/me/player`, body, config).then((response) => {
+      console.log(response);
+    }).catch((error) => {
+      console.log(error);
+    });
   }
 
   /**
@@ -57,13 +68,12 @@ class Mixer extends React.Component {
   async addCollaborator() {
     // adds this collaborator's token to list of collaborators
     this.setState((prevState) => {
-      prevState.mixUpdate.collaboratorTokens.push(prevState.newToken);
+      prevState.collaboratorTokens.push(prevState.newToken);
       return (prevState);
     });
-    console.log(this.state.mixUpdate);
-    // updates the database
-    this.props.updateMix(this.state.mixUpdate, this.props.match.params.mixID);
+    // refreshes collaborator data
     await this.refreshCollaboratorData();
+    console.log('is this running?');
   }
 
   /**
@@ -72,8 +82,7 @@ class Mixer extends React.Component {
   async refreshCollaboratorData() {
     // creates new collaborators template
     const collaborators = [];
-    console.log(this.props.mix);
-    for (let i = 0; i < this.props.mix.collaboratorTokens.length; i += 1) {
+    for (let i = 0; i < this.state.collaboratorTokens.length; i += 1) {
       const collaborator = await this.refreshCollaboratorDataHelper(i);
       // adds collaborator to list
       collaborators.push(collaborator);
@@ -81,7 +90,6 @@ class Mixer extends React.Component {
     this.setState({
       collaborators,
     });
-    console.log('fresh complete');
   }
 
   /**
@@ -93,7 +101,7 @@ class Mixer extends React.Component {
     const collaborator = {
       name: '',
       id: '',
-      token: this.props.mix.collaboratorTokens[i],
+      token: this.state.collaboratorTokens[i],
       topTracks: [],
     };
     // sleep is necessary to not get rejected by Spotify API for too many requests too fast
@@ -112,29 +120,29 @@ class Mixer extends React.Component {
       });
 
       // retrieves collaborator musical preferences
-      axios.get(`${this.SPOTIFY_URL}/me/top/tracks?limit=10`, config).then((response) => {
-        const tempTrack = {
-          name: '',
-          id: '',
-          uri: '',
-          popularity: null,
-          albumName: '',
-          artists: [],
-        };
+      axios.get(`${this.SPOTIFY_URL}/me/top/tracks?limit=15`, config).then((response) => {
         response.data.items.forEach((track) => {
+          const tempTrack = {
+            name: '',
+            id: '',
+            uri: '',
+            popularity: null,
+            albumName: '',
+            artists: [],
+          };
           tempTrack.name = track.name;
           tempTrack.id = track.id;
           tempTrack.uri = track.uri;
           tempTrack.popularity = track.popularity;
           tempTrack.albumName = track.album.name;
           tempTrack.artists = track.artists.map(artist => artist.name);
-          collaborator.topTracks.push(Object.assign({}, tempTrack));
+          collaborator.topTracks.push(tempTrack);
         });
       }).catch((error) => {
         console.log(error);
       });
+      console.log(collaborator.topTracks);
     });
-    console.log('a single helper is done');
     return collaborator;
   }
 
@@ -165,17 +173,18 @@ class Mixer extends React.Component {
       let mixTracks = [];
 
       this.state.collaborators.forEach((collaborator) => {
-        console.log(collaborator);
-        console.log(collaborator.topTracks);
-        mixTracks = mixTracks.concat(collaborator.topTracks);
-        console.log(mixTracks);
+        collaborator.topTracks.forEach((track) => {
+          mixTracks.push(track);
+        });
       });
-      const mixTracksURIs = mixTracks.map(track => track.uri);
+      this.setState({ tracks: mixTracks });
+      const mixTracksURIs = this.state.tracks.map(track => track.uri);
 
       // sets up the axios request body with the local playlist to be sent into Spotify API
       body = {
         uris: mixTracksURIs,
       };
+      console.log(body);
 
       // posts the new local playlist to the Spotify API
       axios.post(`${this.SPOTIFY_URL}/playlists/${playlistID}/tracks`, body, config).then(() => {
@@ -190,16 +199,17 @@ class Mixer extends React.Component {
   }
 
   render() {
-    if (this.props.mix === null) {
-      return (<div>404: post not found</div>);
-    } else if (!this.state.firstRefresh) {
-      return (<div>loading</div>);
+    if (!this.state.loaded || this.props.mixOwner.name === null) {
+      return (<Loader type="Puff" height={200} color="#7D4CDB" width={200} />);
     } else {
+      console.log(this.state.tracks);
+      const collaborators = this.state.collaborators.map(collaborator => <Box key={collaborator.token} margin="small" flex="grow" pad="small" gap="small" round="medium" justify="center" align="center"><Text color="accent-4" textAlign="center" size="small">{collaborator.name}</Text></Box>);
+      const tracks = this.state.tracks.map(track => <Box key={track.id} flex="grow" round="medium" direction="row" justify="between" align="center"><Text color="brand" textAlign="center" size="small" weight="bold">{track.name}</Text><Text color="brand" textAlign="center" size="small">{track.artists[0]}</Text></Box>);
       return (
         <Box id="mix" pad="medium">
           <Grid
             fill
-            rows={['400px', '100px']}
+            rows={['550px', '100px']}
             columns={['300px', '600px']}
             gap="small"
             areas={[
@@ -208,20 +218,29 @@ class Mixer extends React.Component {
               { name: 'player', start: [0, 1], end: [1, 1] },
             ]}
           >
-            <Box gridArea="collaborators" border={{ size: 'medium', color: 'brand' }} pad="large" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
-              <Heading color="brand" level="3">Collaborators</Heading>
-              <TextInput placeholder="token please" value={this.state.newToken} onChange={event => this.setState({ newToken: event.target.value })} />
-              <Button primary color="brand" hoverIndicator="true" onClick={this.addCollaborator} label="Add" />
-              <p>Users:</p>
+            <Box gridArea="collaborators" border={{ size: 'medium', color: 'brand' }} pad="medium" gap="small" animation="fadeIn" justify="start" align="start" elevation="xlarge" round="large">
+              <Heading color="brand" level="3">Welcome, {this.props.mixOwner.name}!</Heading>
+              <Heading color="brand" level="5">Mix Collaborators</Heading>
               <Box align="start" justify="around">
-                hi {}
+                {collaborators}
+              </Box>
+              <Text size="small" textAlign="center" margin="small">
+                Invite your friends music tastes. To add a friend, get their token from{' '}
+                <a href={this.TOKEN_URL} target="_blank" rel="noopener noreferrer">
+                  here
+                </a>
+              </Text>
+              <TextInput placeholder="insert token here" value={this.state.newToken} onChange={event => this.setState({ newToken: event.target.value })} />
+              <Button primary color="brand" hoverIndicator="true" onClick={this.addCollaborator} label="Add" />
+            </Box>
+            <Box gridArea="mixer" border={{ size: 'medium', color: 'brand' }} pad="medium" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
+              <Button primary color="brand" onClick={this.mixx} label="Mix" />
+              <Box overflow="scroll" fill="horizontal" gap="small">
+                {tracks}
               </Box>
             </Box>
-            <Box gridArea="mixer" border={{ size: 'medium', color: 'brand' }} pad="large" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
-              <Button primary color="brand" onClick={this.mixx} label="Mix" />
-            </Box>
             <Box gridArea="player" border={{ size: 'medium', color: 'brand' }} pad="large" animation="fadeIn" justify="around" align="center" alignContent="between" elevation="xlarge" round="large">
-              <Player />
+              <Player api={this.startPlayback} />
             </Box>
           </Grid>
         </Box>
@@ -233,8 +252,7 @@ class Mixer extends React.Component {
 const mapStateToProps = state => (
   {
     mixOwner: state.auth,
-    mix: state.mixes.current,
   }
 );
 
-export default withRouter(connect(mapStateToProps, { updateMix, currentizeMix })(Mixer));
+export default withRouter(connect(mapStateToProps, null)(Mixer));

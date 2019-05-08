@@ -12,15 +12,12 @@ export const ActionTypes = {
 };
 
 
-const client_id = process.env.CLIENT_ID; // Your client id
 // custom-built authentication node.js mixify-server
 // const ROOT_URL = 'https://mixify-server.herokuapp.com';
 const ROOT_URL = 'http://localhost:9090';
-const redirect_uri = 'https://mixify-server.herokuapp.com/callback'; // Your redirect uri
 
 // Spotify's API
 const SPOTIFY_URL = 'https://api.spotify.com/v1';
-const SPOTIFY_AUTH_URL = 'https://accounts.spotify.com/authorize';
 
 /**
  * Saves the user authentication token to redux store and configures axios headers.
@@ -51,78 +48,78 @@ export function getAudioFeatures(id) {
 
 // MIX
 
-/**
- * Fetches all the mixes.
- */
-export function fetchMixes() {
-  return (dispatch) => {
-    axios.get(`${ROOT_URL}/mixes`).then((response) => {
-      dispatch({ type: ActionTypes.FETCH_MIXES, payload: response.data });
-    }).catch((error) => {
-      console.log(error);
-    });
-  };
-}
+// /**
+//  * Fetches all the mixes.
+//  */
+// export function fetchMixes() {
+//   return (dispatch) => {
+//     axios.get(`${ROOT_URL}/mixes`).then((response) => {
+//       dispatch({ type: ActionTypes.FETCH_MIXES, payload: response.data });
+//     }).catch((error) => {
+//       console.log(error);
+//     });
+//   };
+// }
 
-/**
- * Makes a mix the current mix.
- * @param {String} id
- */
-export function currentizeMix(id, history) {
-  return (dispatch) => {
-    axios.get(`${ROOT_URL}/mixes/${id}`).then((response) => {
-      dispatch({ type: ActionTypes.CURRENTIZE_MIX, payload: response.data });
-      history.push(`/${id}`);
-    }).catch((error) => {
-      console.log(error);
-    });
-  };
-}
+// /**
+//  * Makes a mix the current mix.
+//  * @param {String} id
+//  */
+// export function currentizeMix(id, history) {
+//   return (dispatch) => {
+//     axios.get(`${ROOT_URL}/mixes/${id}`).then((response) => {
+//       dispatch({ type: ActionTypes.CURRENTIZE_MIX, payload: response.data });
+//       history.push(`/${id}`);
+//     }).catch((error) => {
+//       console.log(error);
+//     });
+//   };
+// }
 
-/**
- * Creates a new mix.
- * @param {Object} mix
- */
-export function createMix(mix) {
-  return (dispatch) => {
-    axios.post(`${ROOT_URL}/mixes`, mix).then(() => {
-      fetchMixes()(dispatch);
-    }).catch((error) => {
-      console.log(error);
-    });
-  };
-}
+// /**
+//  * Creates a new mix.
+//  * @param {Object} mix
+//  */
+// export function createMix(mix) {
+//   return (dispatch) => {
+//     axios.post(`${ROOT_URL}/mixes`, mix).then(() => {
+//       fetchMixes()(dispatch);
+//     }).catch((error) => {
+//       console.log(error);
+//     });
+//   };
+// }
 
-/**
- * Makes changes to a mix.
- * @param {Object} mixUpdate
- * @param {String} id
- */
-export function updateMix(mixUpdate, id) {
-  return (dispatch) => {
-    console.log(ROOT_URL);
-    axios.put(`${ROOT_URL}/mixes/${id}`, mixUpdate).then((response) => {
-      dispatch({ type: ActionTypes.UPDATE_MIX, payload: response.data });
-    }).catch((error) => {
-      console.log(error);
-    });
-  };
-}
+// /**
+//  * Makes changes to a mix.
+//  * @param {Object} mixUpdate
+//  * @param {String} id
+//  */
+// export function updateMix(mixUpdate, id) {
+//   return (dispatch) => {
+//     console.log(ROOT_URL);
+//     axios.put(`${ROOT_URL}/mixes/${id}`, mixUpdate).then((response) => {
+//       dispatch({ type: ActionTypes.UPDATE_MIX, payload: response.data });
+//     }).catch((error) => {
+//       console.log(error);
+//     });
+//   };
+// }
 
-/**
- * Removes a mix.
- * @param {String} id
- * @param {Object} history
- */
-export function removeMix(id, history) {
-  return (dispatch) => {
-    axios.delete(`${ROOT_URL}/mixes/${id}$`).then((response) => {
-      console.log(response);
-      fetchMixes()(dispatch);
-      dispatch({ type: ActionTypes.REMOVE_MIX, payload: null });
-      history.push('/');
-    }).catch((error) => {
-      console.log(error);
-    });
-  };
-}
+// /**
+//  * Removes a mix.
+//  * @param {String} id
+//  * @param {Object} history
+//  */
+// export function removeMix(id, history) {
+//   return (dispatch) => {
+//     axios.delete(`${ROOT_URL}/mixes/${id}$`).then((response) => {
+//       console.log(response);
+//       fetchMixes()(dispatch);
+//       dispatch({ type: ActionTypes.REMOVE_MIX, payload: null });
+//       history.push('/');
+//     }).catch((error) => {
+//       console.log(error);
+//     });
+//   };
+// }

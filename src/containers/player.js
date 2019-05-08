@@ -65,7 +65,7 @@ class Player extends React.Component {
     // Ready
     this.player.on('ready', (data) => {
       const { device_id } = data;
-      console.log(`Let the music play on ${this.state.device_id}!`);
+      console.log(`Let the music play on ${device_id}!`);
       this.setState({ device_id });
     });
   }
@@ -153,7 +153,7 @@ class Player extends React.Component {
   render() {
     if (this.state.playerState === null) {
       return (
-        <div>Play a song!</div>
+        <Button label="Play" onClick={() => { this.props.api(this.state.device_id); this.player.setVolume(0.5); }} />
       );
     } else {
       return (
@@ -161,9 +161,9 @@ class Player extends React.Component {
           <p>Album: {this.state.playerState.track_window.current_track.album.name}</p>
           <p>Track: {this.state.playerState.track_window.current_track.name}</p>
           <p>Artists: {this.state.playerState.track_window.current_track.artists.map((artist) => { return artist.name; })}</p>
-          <Button label="Previous" onClick={() => this.player.previousTrack()} />
-          <Button label={this.state.playerState.paused ? 'Play' : 'Pause'} onClick={() => this.player.togglePlay()} />
-          <Button label="Next" onClick={() => this.player.nextTrack()} />
+          <button type="button" onClick={() => this.player.previousTrack()}>Previous</button>
+          <button type="button" onClick={() => this.player.togglePlay()}>{this.state.playerState.paused ? 'Play' : 'Pause'}</button>
+          <button type="button" onClick={() => this.player.nextTrack()}>Next</button>
           {this.renderIfHasAudioFeatures()}
         </div>
       );
