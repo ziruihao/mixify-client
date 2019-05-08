@@ -161,9 +161,9 @@ class Player extends React.Component {
           <p>Album: {this.state.playerState.track_window.current_track.album.name}</p>
           <p>Track: {this.state.playerState.track_window.current_track.name}</p>
           <p>Artists: {this.state.playerState.track_window.current_track.artists.map((artist) => { return artist.name; })}</p>
-          <button type="button" onClick={() => this.player.previousTrack()}>Previous</button>
-          <button type="button" onClick={() => this.player.togglePlay()}>{this.state.playerState.paused ? 'Play' : 'Pause'}</button>
-          <button type="button" onClick={() => this.player.nextTrack()}>Next</button>
+          <button type="button" onClick={() => this.player.previousTrack().then()}>Previous</button>
+          <button type="button" onClick={() => this.player.togglePlay().then()}>{this.state.playerState.paused ? 'Play' : 'Pause'}</button>
+          <button type="button" onClick={() => this.player.nextTrack().then()}>Next</button>
           {this.renderIfHasAudioFeatures()}
         </div>
       );
