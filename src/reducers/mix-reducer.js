@@ -1,7 +1,7 @@
 import { ActionTypes } from '../actions';
 
 const initialState = {
-  all: [],
+  // all: [],
   current: null,
 };
 
@@ -24,10 +24,10 @@ const MixReducer = (state = initialState, action) => {
       return (Object.assign({}, state, {
         current: null,
       }));
-    case ActionTypes.FETCH_MIXES:
-      return (Object.assign({}, state, {
-        all: action.payload,
-      }));
+    // case ActionTypes.FETCH_MIXES:
+    //   return (Object.assign({}, state, {
+    //     all: action.payload,
+    //   }));
     default:
       return state;
   }

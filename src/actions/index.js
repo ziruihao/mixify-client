@@ -8,7 +8,7 @@ export const ActionTypes = {
   MAKE_MIX: 'MAKE_POST',
   UPDATE_MIX: 'UPDATE_MIX',
   REMOVE_MIX: 'REMOVE_MIX',
-  FETCH_MIXES: 'FETCH_MIXES',
+  // FETCH_MIXES: 'FETCH_MIXES',
 };
 
 
@@ -46,7 +46,7 @@ export function getAudioFeatures(id) {
   };
 }
 
-// MIX
+// MIX;
 
 // /**
 //  * Fetches all the mixes.
@@ -61,65 +61,65 @@ export function getAudioFeatures(id) {
 //   };
 // }
 
-// /**
-//  * Makes a mix the current mix.
-//  * @param {String} id
-//  */
-// export function currentizeMix(id, history) {
-//   return (dispatch) => {
-//     axios.get(`${ROOT_URL}/mixes/${id}`).then((response) => {
-//       dispatch({ type: ActionTypes.CURRENTIZE_MIX, payload: response.data });
-//       history.push(`/${id}`);
-//     }).catch((error) => {
-//       console.log(error);
-//     });
-//   };
-// }
+/**
+ * Makes a mix the current mix.
+ * @param {String} id
+ */
+export function currentizeMix(id, history) {
+  return (dispatch) => {
+    axios.get(`${ROOT_URL}/mixes/${id}`).then((response) => {
+      dispatch({ type: ActionTypes.CURRENTIZE_MIX, payload: response.data });
+      history.push(`/${id}`);
+    }).catch((error) => {
+      console.log(error);
+    });
+  };
+}
 
-// /**
-//  * Creates a new mix.
-//  * @param {Object} mix
-//  */
-// export function createMix(mix) {
-//   return (dispatch) => {
-//     axios.post(`${ROOT_URL}/mixes`, mix).then(() => {
-//       fetchMixes()(dispatch);
-//     }).catch((error) => {
-//       console.log(error);
-//     });
-//   };
-// }
+/**
+ * Creates a new mix.
+ * @param {Object} mix
+ */
+export function createMix(mix) {
+  return (dispatch) => {
+    axios.post(`${ROOT_URL}/mixes`, mix).then(() => {
+      fetchMixes()(dispatch);
+    }).catch((error) => {
+      console.log(error);
+    });
+  };
+}
 
-// /**
-//  * Makes changes to a mix.
-//  * @param {Object} mixUpdate
-//  * @param {String} id
-//  */
-// export function updateMix(mixUpdate, id) {
-//   return (dispatch) => {
-//     console.log(ROOT_URL);
-//     axios.put(`${ROOT_URL}/mixes/${id}`, mixUpdate).then((response) => {
-//       dispatch({ type: ActionTypes.UPDATE_MIX, payload: response.data });
-//     }).catch((error) => {
-//       console.log(error);
-//     });
-//   };
-// }
+/**
+ * Makes changes to a mix.
+ * @param {Object} mixUpdate
+ * @param {String} id
+ */
+export function updateMix(mixUpdate, id) {
+  return (dispatch) => {
+    console.log(ROOT_URL);
+    axios.put(`${ROOT_URL}/mixes/${id}`, mixUpdate).then((response) => {
+      dispatch({ type: ActionTypes.UPDATE_MIX, payload: response.data });
+    }).catch((error) => {
+      console.log(error);
+    });
+  };
+}
 
-// /**
-//  * Removes a mix.
-//  * @param {String} id
-//  * @param {Object} history
-//  */
-// export function removeMix(id, history) {
-//   return (dispatch) => {
-//     axios.delete(`${ROOT_URL}/mixes/${id}$`).then((response) => {
-//       console.log(response);
-//       fetchMixes()(dispatch);
-//       dispatch({ type: ActionTypes.REMOVE_MIX, payload: null });
-//       history.push('/');
-//     }).catch((error) => {
-//       console.log(error);
-//     });
-//   };
-// }
+/**
+ * Removes a mix.
+ * @param {String} id
+ * @param {Object} history
+ */
+export function removeMix(id, history) {
+  return (dispatch) => {
+    axios.delete(`${ROOT_URL}/mixes/${id}$`).then((response) => {
+      console.log(response);
+      fetchMixes()(dispatch);
+      dispatch({ type: ActionTypes.REMOVE_MIX, payload: null });
+      history.push('/');
+    }).catch((error) => {
+      console.log(error);
+    });
+  };
+}
