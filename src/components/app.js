@@ -4,15 +4,15 @@ import {
 } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Player from '../containers/player';
+// import Player from '../containers/player';
 import Mixer from '../containers/mixer';
 import TokenReceiver from '../containers/token-receiver';
 import Login from './login';
 
 
-const FallBack = () => {
-  return <div>URL Not Found</div>;
-};
+// const FallBack = () => {
+//   return <div>URL Not Found</div>;
+// };
 
 const App = (props) => {
   if (props.mixOwner.token === null) {
@@ -28,9 +28,9 @@ const App = (props) => {
         <div>
           <Switch>
             <Route path="/auth/:token" component={TokenReceiver} />
-            <Route exact path="/" component={Mixer} />
-            <Route exact path="/player" component={Player} />
-            <Route component={FallBack} />
+            <Route exact path="/mix/:id" component={Mixer} />
+            {/* <Route exact path="/player" component={Player} /> */}
+            <Route component={Login} />
           </Switch>
         </div>
       </Router>

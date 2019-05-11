@@ -81,12 +81,13 @@ export function currentizeMix(id, history) {
  * @param {Object} mix
  */
 export function createMix(mix) {
-  return (dispatch) => {
-    axios.post(`${ROOT_URL}/mixes`, mix).then(() => {
-      fetchMixes()(dispatch);
-    }).catch((error) => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.post(`${ROOT_URL}/mixes`, mix);
+      await dispatch({ type: ActionTypes.CURRENTIZE_MIX, payload: response.data });
+    } catch (error) {
       console.log(error);
-    });
+    }
   };
 }
 
@@ -97,12 +98,21 @@ export function createMix(mix) {
  */
 export function updateMix(mixUpdate, id) {
   return (dispatch) => {
-    console.log(ROOT_URL);
     axios.put(`${ROOT_URL}/mixes/${id}`, mixUpdate).then((response) => {
       dispatch({ type: ActionTypes.UPDATE_MIX, payload: response.data });
     }).catch((error) => {
       console.log(error);
     });
+  };
+}
+
+/**
+ * Makes changes to the local mix in the redux store.
+ * @param {Object} mixUpdate
+ */
+export function updateLocalMix(mixUpdate) {
+  return {
+    type: ActionTypes.UPDATE_MIX, payload: mixUpdate,
   };
 }
 
@@ -114,8 +124,6 @@ export function updateMix(mixUpdate, id) {
 export function removeMix(id, history) {
   return (dispatch) => {
     axios.delete(`${ROOT_URL}/mixes/${id}$`).then((response) => {
-      console.log(response);
-      fetchMixes()(dispatch);
       dispatch({ type: ActionTypes.REMOVE_MIX, payload: null });
       history.push('/');
     }).catch((error) => {
