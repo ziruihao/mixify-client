@@ -18,20 +18,21 @@ import Loader from 'react-loader-spinner';
 import Player from './player';
 
 // actions
-import { updateLocalMix, updateMix } from '../actions';
+import { currentizeMix, updateLocalMix, updateMix } from '../actions';
 
 class Mixer extends React.Component {
   constructor(props) {
     super(props);
     this.SPOTIFY_URL = 'https://api.spotify.com/v1';
-    this.TOKEN_URL = 'https://mixify-server.herokuapp.com/getToken';
+    // this.TOKEN_URL = 'https://mixify-server.herokuapp.com/authCollaborator';
+    this.TOKEN_URL = 'http://localhost:9090/authCollaborator';
 
     this.state = {
       mixHasLoaded: false,
       newToken: '',
       // localMix: {
       //   owner: null,
-      //   collaborators: [this.props.mixOwner],
+      //   collaborators: [this.props.user],
       //   tracks: [],
       //   spotifyPlaylistID: null,
       //   id: null,
@@ -45,6 +46,19 @@ class Mixer extends React.Component {
 
   async componentWillMount() {
     // await this.grabAllCollaboratorsData();
+    await this.props.currentizeMix(this.props.match.params.id, this.props.history);
+    console.log(this.props.mix);
+    if (this.props.user.name !== null) {
+      let isNew = true;
+      this.props.mix.collaborators.forEach((collaborator) => {
+        if (collaborator.id === this.props.user.id) {
+          isNew = false;
+        }
+      });
+      if (isNew) {
+        this.addCollaborator(this.props.user.token);
+      }
+    }
     this.sleep(1500).then(() => { // here to show off the cool loading animation :)
       this.setState({ mixHasLoaded: true });
     });
@@ -58,7 +72,7 @@ class Mixer extends React.Component {
     // sets the config with authorization of current collaborator's token
     console.log(device_id);
     const config = {
-      headers: { Authorization: `Bearer ${this.props.mixOwner.token}` },
+      headers: { Authorization: `Bearer ${this.props.user.token}` },
     };
     let body = {
       device_ids: [device_id],
@@ -72,7 +86,7 @@ class Mixer extends React.Component {
     }
 
     body = {
-      context_uri: `spotify:user:paperrapper:playlist:${this.props.mix.spotifyPlaylistID}`,
+      context_uri: `spotify:user:${this.props.user.id}:playlist:${this.props.mix.spotifyPlaylistID}`,
     };
 
     try {
@@ -97,7 +111,7 @@ class Mixer extends React.Component {
   /**
    * Retrieves user's data from Spotify API and adds the user to the database of this mix.
    */
-  async addCollaborator() {
+  async addCollaborator(token) {
     // adds this collaborator's token to list of collaborators
     // this.setState((prevState) => {
     //   prevState.collaboratorTokens.push(prevState.newToken);
@@ -105,12 +119,15 @@ class Mixer extends React.Component {
     // });
 
     // refreshes collaborator data
-    const collaborator = await this.grabCollaboratorData(this.state.newToken);
+    const collaborator = await this.grabCollaboratorData(token);
     // grabs the most recent list of collaborators from redux store, adds this new collaborator to it
-    const collaborators = Object.assign({}, this.props.mix.collaborators);
+    const collaborators = Object.assign([], this.props.mix.collaborators);
+    console.log(collaborators);
     collaborators.push(collaborator);
     // sends in for redux update
     this.props.updateLocalMix({ collaborators });
+    // console.log(this.props.mix.collaborators);
+    this.props.updateMix(this.props.mix, this.props.mix.id);
   }
 
   /**
@@ -171,7 +188,10 @@ class Mixer extends React.Component {
           popularity: track.popularity,
           albumName: track.album.name,
           artistNames: track.artists.map(artist => artist.name),
-          fromUser: collaborator,
+          fromUser: {
+            name: collaborator.name,
+            id: collaborator.id,
+          },
         };
         collaborator.topTracks.push(tempTrack);
       });
@@ -190,7 +210,7 @@ class Mixer extends React.Component {
     // sets up axios headers with the necessary tokens
     const config = {
       headers: {
-        Authorization: `Bearer ${this.props.mixOwner.token}`,
+        Authorization: `Bearer ${this.props.mix.owner.token}`,
         'Content-Type': 'application/json',
       },
     };
@@ -201,7 +221,7 @@ class Mixer extends React.Component {
       description: 'For the aux king.',
     };
     try {
-      const response = await axios.post(`${this.SPOTIFY_URL}/users/${this.props.mixOwner.id}/playlists`, body, config);
+      const response = await axios.post(`${this.SPOTIFY_URL}/users/${this.props.mix.owner.token}/playlists`, body, config);
       await this.props.updateLocalMix({ spotifyPlaylistID: response.data.id });
       // this.setState(prevState => ({
       //   mix: Object.assign({}, prevState, { spotifyPlaylistID: response.data.id }),
@@ -240,11 +260,11 @@ class Mixer extends React.Component {
   }
 
   renderPlayer = () => {
-    if (this.props.mix.spotifyPlaylistID === '') {
-      return (<Heading alignSelf="center" color="brand" textAlign="center" level="5">Make a Mix to start playing!</Heading>);
-    } else {
-      return (<Player startPlayback={this.startPlayback} />);
-    }
+    // if (this.props.mix.spotifyPlaylistID === '') {
+    //   return (<Heading alignSelf="center" color="brand" textAlign="center" level="5">Make a Mix to start playing!</Heading>);
+    // } else {
+    //   return (<Player startPlayback={this.startPlayback} />);
+    // }
   }
 
   renderTracks = () => {
@@ -257,8 +277,10 @@ class Mixer extends React.Component {
   }
 
   render() {
-    if (!this.state.mixHasLoaded || this.props.mixOwner.name === null) {
+    if (!this.state.mixHasLoaded) {
       return (<Loader type="Puff" height={200} width={200} color="#7D4CDB" />);
+    } else if (this.props.mix === null) {
+      return (<Text>404: Mix not found. </Text>);
     } else {
       const collaborators = this.props.mix.collaborators.map(collaborator => <Box key={collaborator.token} pad="small" gap="small" round="medium" justify="evenly" align="stretch"><Text textAlign="start" size="small">{collaborator.name}</Text></Box>);
       return (
@@ -275,10 +297,10 @@ class Mixer extends React.Component {
             ]}
           >
             <Box gridArea="collaborators" border={{ size: 'medium', color: 'brand' }} pad="medium" gap="small" animation="fadeIn" justify="start" align="start" elevation="xlarge" round="large">
-              <Heading color="brand" level="3">Welcome, {this.props.mixOwner.name}!</Heading>
+              <Heading color="brand" level="3">Welcome, {this.props.user.name}!</Heading>
               <Text color="neutral-2" size="medium" weight="bold">Mix Collaborators</Text>
               <Box alignContent="start" justify="start" pad={{ left: 'xsmall' }} fill gap="xsmall">
-                {collaborators}
+                Owner: {this.props.mix.owner.name}{collaborators}
               </Box>
               <Text size="small" textAlign="start">
                 Invite your {'friend\'s'} music tastes. To add a friend, get their token from{' '}
@@ -288,7 +310,9 @@ class Mixer extends React.Component {
                  Open in incognito.
               </Text>
               <TextInput placeholder="insert token here" value={this.state.newToken} onChange={event => this.setState({ newToken: event.target.value })} />
-              <Button primary color="brand" alignSelf="center" hoverIndicator="true" onClick={this.addCollaborator} label="Add friend" />
+              <a href={`${this.TOKEN_URL}?mixId=${this.props.mix.id}`}>
+                <Button primary color="brand" alignSelf="center" hoverIndicator="true" label="Join Collab" />
+              </a>
             </Box>
             <Box gridArea="mixer" border={{ size: 'medium', color: 'brand' }} pad="medium" gap="medium" animation="fadeIn" justify="start" align="stretch" alignContent="stretch" elevation="xlarge" round="large">
               <Button primary color="brand" alignSelf="center" onClick={this.mixx} label="Mix it!" />
@@ -308,9 +332,9 @@ class Mixer extends React.Component {
 
 const mapStateToProps = state => (
   {
-    mixOwner: state.auth,
+    user: state.auth,
     mix: state.mixes.current,
   }
 );
 
-export default withRouter(connect(mapStateToProps, { updateLocalMix, updateMix })(Mixer));
+export default withRouter(connect(mapStateToProps, { currentizeMix, updateLocalMix, updateMix })(Mixer));

@@ -5,8 +5,11 @@ import { withRouter } from 'react-router-dom';
 // Axios
 import axios from 'axios';
 
+import queryString from 'query-string';
+
 // actions
-import { createMix, saveUser } from '../actions';
+import { createMix, saveUser, currentizeMix } from '../actions';
+
 
 const SPOTIFY_URL = 'https://api.spotify.com/v1';
 
@@ -48,19 +51,35 @@ class TokenReceiver extends React.Component {
           popularity: track.popularity,
           albumName: track.album.name,
           artistNames: track.artists.map(artist => artist.name),
-          fromUser: user.name,
+          fromUser: {
+            name: user.name,
+            id: user.id,
+          },
         });
       });
     } catch (error) {
       console.log(error);
     }
-    await this.props.createMix({
-      name: 'Untitled mix',
-      collaborators: [user],
-      tracks: [],
-    });
-    this.props.saveUser(user);
-    this.props.history.push(`/mix/${this.props.mix.id}`);
+
+    const query = queryString.parse(this.props.location.search);
+    console.log(query);
+    if (query.isCollaborator === 'true') {
+      console.log('hello');
+      this.props.saveUser(user);
+      await this.props.currentizeMix(query.mixId, this.props.history);
+      // this.props.history.push(`/mix/${query.mixId}`);
+    } else {
+      console.log('this shoudl be run');
+      await this.props.createMix({
+        name: 'Untitled mix',
+        owner: user,
+        collaborators: [user],
+        tracks: [],
+        spotifyPlaylistID: null,
+      });
+      this.props.saveUser(user);
+      this.props.history.push(`/mix/${this.props.mix.id}`);
+    }
   }
 
   render() {
@@ -74,4 +93,4 @@ const mapStateToProps = state => (
   }
 );
 
-export default withRouter(connect(mapStateToProps, { createMix, saveUser })(TokenReceiver));
+export default withRouter(connect(mapStateToProps, { createMix, saveUser, currentizeMix })(TokenReceiver));

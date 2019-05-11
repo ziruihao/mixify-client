@@ -5,8 +5,8 @@ import {
   Button, Heading, Text, Box,
 } from 'grommet';
 
-const mixifyServerURI = 'https://mixify-server.herokuapp.com/authClient';
-const mixifyDevServerURI = 'http://localhost:9090/authClient';
+const mixifyServerURI = 'https://mixify-server.herokuapp.com/authOwner';
+const mixifyDevServerURI = 'http://localhost:9090/authOwner';
 
 const Login = () => {
   return (
@@ -16,7 +16,7 @@ const Login = () => {
             Welcome to Mixify! Create hit playlists that mix your {'friend\'s'} music tastes together.
       </Text>
       <a href={mixifyDevServerURI} rel="noopener noreferrer">
-        <Button primary color="brand" hoverIndicator="true" label="Go" />
+        <Button primary color="brand" hoverIndicator="true" label="Create Mix" />
       </a>
     </Box>
   );
