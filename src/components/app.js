@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 // import Player from '../containers/player';
 import Mixer from '../containers/mixer';
 import TokenReceiver from '../containers/token-receiver';
-import Login from './login';
+import Splash from './splash';
 
 const App = () => {
   return (
@@ -17,7 +17,7 @@ const App = () => {
           <Route path="/auth/:token" component={TokenReceiver} />
           <Route exact path="/mix/:id" component={Mixer} />
           {/* <Route exact path="/player" component={Player} /> */}
-          <Route component={Login} />
+          <Route component={Splash} />
         </Switch>
       </div>
     </Router>

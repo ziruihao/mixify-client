@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 // Grommet
 import { Button, Box, Text } from 'grommet';
 import {
-  PlayFill, PauseFill, FastForward, Rewind, Spotify,
+  PlayFill, PauseFill, FastForward, Rewind,
 } from 'grommet-icons';
 
 // actions
@@ -156,7 +156,7 @@ class Player extends React.Component {
   render() {
     if (this.state.playerState === null) {
       return (
-        <Button alignSelf="center" label="Play" primary color="brand" onClick={() => { this.props.startPlayback(this.state.device_id); this.player.setVolume(0.5); }} />
+        <Button alignSelf="center" label="Play" primary color="brand" hoverIndicator onClick={() => { this.props.startPlayback(this.state.device_id); this.player.setVolume(0.5); }} />
       );
     } else {
       return (
@@ -170,9 +170,9 @@ class Player extends React.Component {
             {this.renderIfHasAudioFeatures()}
           </Box>
           <Box direction="row" justify="center" align="center" gap="medium" fill>
-            <Button type="button" onClick={() => this.player.previousTrack().then()} icon={<Rewind color="brand" />} />
-            <Button type="button" onClick={() => this.player.togglePlay().then()} icon={this.state.playerState.paused ? <PlayFill color="brand" /> : <PauseFill color="brand" />} color="brand" />
-            <Button type="button" onClick={() => this.player.nextTrack().then()} icon={<FastForward color="brand" />} />
+            <Button hoverIndicator onClick={() => this.player.previousTrack().then()} icon={<Rewind color="brand" />} />
+            <Button hoverIndicator onClick={() => this.player.togglePlay().then()} icon={this.state.playerState.paused ? <PlayFill color="brand" /> : <PauseFill color="brand" />} color="brand" />
+            <Button hoverIndicator onClick={() => this.player.nextTrack().then()} icon={<FastForward color="brand" />} />
           </Box>
         </Box>
       );

@@ -2,7 +2,13 @@ import { ActionTypes } from '../actions';
 
 const initialState = {
   // all: [],
-  current: null,
+  current: {
+    owner: null,
+    collaborators: [],
+    tracks: [],
+    spotifyPlaylistID: null,
+    id: null,
+  },
 };
 
 const MixReducer = (state = initialState, action) => {
@@ -26,7 +32,7 @@ const MixReducer = (state = initialState, action) => {
       })); }
     case ActionTypes.REMOVE_MIX:
       return (Object.assign({}, state, {
-        current: null,
+        current: initialState,
       }));
     // case ActionTypes.FETCH_MIXES:
     //   return (Object.assign({}, state, {
