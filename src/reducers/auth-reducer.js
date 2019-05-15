@@ -4,6 +4,7 @@ const initialState = {
   name: null,
   id: null,
   token: null,
+  topTracks: [],
 };
 
 const AuthReducer = (state = initialState, action) => {

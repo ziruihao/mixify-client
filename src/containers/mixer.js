@@ -1,10 +1,9 @@
-/* eslint-disable prefer-const */
-/* eslint-disable for-direction */
 /* eslint-disable no-await-in-loop */
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
+// Axios
 import axios from 'axios';
 
 // Grommet
@@ -12,34 +11,42 @@ import {
   Button, Heading, Text, TextInput, Box, Grid,
 } from 'grommet';
 
+// cool loader
 import Loader from 'react-loader-spinner';
 
+// web player
 import Player from './player';
+
+// actions
+import { updateLocalMix, updateMix } from '../actions';
 
 class Mixer extends React.Component {
   constructor(props) {
     super(props);
     this.SPOTIFY_URL = 'https://api.spotify.com/v1';
     this.TOKEN_URL = 'https://mixify-server.herokuapp.com/getToken';
+
     this.state = {
-      loaded: false,
-      begunMixCreation: false,
+      mixHasLoaded: false,
       newToken: '',
-      collaborators: [],
-      collaboratorTokens: [this.props.mixOwner.token],
-      tracks: [],
-      playlistID: '',
+      // localMix: {
+      //   owner: null,
+      //   collaborators: [this.props.mixOwner],
+      //   tracks: [],
+      //   spotifyPlaylistID: null,
+      //   id: null,
+      // },
     };
     this.addCollaborator = this.addCollaborator.bind(this);
-    this.refreshCollaboratorData = this.refreshCollaboratorData.bind(this);
-    this.refreshCollaboratorDataHelper = this.refreshCollaboratorDataHelper.bind(this);
+    this.grabAllCollaboratorsData = this.grabAllCollaboratorsData.bind(this);
+    this.grabCollaboratorData = this.grabCollaboratorData.bind(this);
     this.mixx = this.mixx.bind(this);
   }
 
   async componentWillMount() {
-    await this.refreshCollaboratorData();
+    // await this.grabAllCollaboratorsData();
     this.sleep(1500).then(() => { // here to show off the cool loading animation :)
-      this.setState({ loaded: true });
+      this.setState({ mixHasLoaded: true });
     });
   }
 
@@ -65,7 +72,7 @@ class Mixer extends React.Component {
     }
 
     body = {
-      context_uri: `spotify:user:paperrapper:playlist:${this.state.playlistID}`,
+      context_uri: `spotify:user:paperrapper:playlist:${this.props.mix.spotifyPlaylistID}`,
     };
 
     try {
@@ -81,7 +88,7 @@ class Mixer extends React.Component {
   shuffle = (array) => {
     const shuffledArray = Object.assign([], array);
     for (let i = array.length - 1; i > 0; i -= 1) {
-      let j = Math.floor(Math.random() * (i + 1));
+      const j = Math.floor(Math.random() * (i + 1));
       [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
     }
     return shuffledArray;
@@ -92,43 +99,50 @@ class Mixer extends React.Component {
    */
   async addCollaborator() {
     // adds this collaborator's token to list of collaborators
-    this.setState((prevState) => {
-      prevState.collaboratorTokens.push(prevState.newToken);
-      return (prevState);
-    });
+    // this.setState((prevState) => {
+    //   prevState.collaboratorTokens.push(prevState.newToken);
+    //   return (prevState);
+    // });
+
     // refreshes collaborator data
-    await this.refreshCollaboratorData();
+    const collaborator = await this.grabCollaboratorData(this.state.newToken);
+    // grabs the most recent list of collaborators from redux store, adds this new collaborator to it
+    const collaborators = Object.assign({}, this.props.mix.collaborators);
+    collaborators.push(collaborator);
+    // sends in for redux update
+    this.props.updateLocalMix({ collaborators });
   }
 
   /**
    * Refreshes all the collaborators' data by retrieiving the most up-to-date music preferences from Spotifty API.
    */
-  async refreshCollaboratorData() {
+  async grabAllCollaboratorsData() {
     // creates new collaborators template
     const collaborators = [];
-    for (let i = 0; i < this.state.collaboratorTokens.length; i += 1) {
-      const collaborator = await this.refreshCollaboratorDataHelper(i);
+    for (let i = 0; i < this.props.mix.collaborators.length; i += 1) {
+      const collaborator = await this.sleep(10).then(() => this.grabCollaboratorData(this.state.collaboratorTokens[i]));
       // adds collaborator to list
       collaborators.push(collaborator);
     }
-    this.setState({
-      collaborators,
-    });
+    this.props.updateLocalMix({ collaborators });
+    // this.setState({
+    //   collaborators,
+    // });
   }
 
   /**
    * Heplper function to atomize the asynchornize process of freshing collaborator data.
    * @param {Number} i
    */
-  async refreshCollaboratorDataHelper(i) {
+  async grabCollaboratorData(token) {
     // sleep is necessary to not get rejected by Spotify API for too many requests too fast
-    await this.sleep(10);
+    // await this.sleep(10);
 
     // creates a new collaborator template
     const collaborator = {
       name: '',
       id: '',
-      token: this.state.collaboratorTokens[i],
+      token,
       topTracks: [],
     };
 
@@ -137,7 +151,7 @@ class Mixer extends React.Component {
       headers: { Authorization: `Bearer ${collaborator.token}` },
     };
 
-    // retrieves collaborator account data
+    // retrieves collaborator's account data
     try {
       const response = await axios.get(`${this.SPOTIFY_URL}/me`, config);
       collaborator.name = response.data.display_name;
@@ -146,24 +160,19 @@ class Mixer extends React.Component {
       console.log(error);
     }
 
-    // retrieves collaborator musical preferences
+    // retrieves collaborator's musical preferences
     try {
       const response = await axios.get(`${this.SPOTIFY_URL}/me/top/tracks?limit=15`, config);
       response.data.items.forEach((track) => {
         const tempTrack = {
-          name: '',
-          id: '',
-          uri: '',
-          popularity: null,
-          albumName: '',
-          artists: [],
+          name: track.name,
+          id: track.id,
+          uri: track.uri,
+          popularity: track.popularity,
+          albumName: track.album.name,
+          artistNames: track.artists.map(artist => artist.name),
+          fromUser: collaborator,
         };
-        tempTrack.name = track.name;
-        tempTrack.id = track.id;
-        tempTrack.uri = track.uri;
-        tempTrack.popularity = track.popularity;
-        tempTrack.albumName = track.album.name;
-        tempTrack.artists = track.artists.map(artist => artist.name);
         collaborator.topTracks.push(tempTrack);
       });
     } catch (error) {
@@ -176,7 +185,7 @@ class Mixer extends React.Component {
    * Mixes the playlist!
    */
   async mixx() {
-    await this.refreshCollaboratorData();
+    // await this.grabAllCollaboratorsData();
     console.log('begining to mix');
     // sets up axios headers with the necessary tokens
     const config = {
@@ -193,22 +202,29 @@ class Mixer extends React.Component {
     };
     try {
       const response = await axios.post(`${this.SPOTIFY_URL}/users/${this.props.mixOwner.id}/playlists`, body, config);
-      this.setState({ playlistID: response.data.id });
+      await this.props.updateLocalMix({ spotifyPlaylistID: response.data.id });
+      // this.setState(prevState => ({
+      //   mix: Object.assign({}, prevState, { spotifyPlaylistID: response.data.id }),
+      // }));
     } catch (error) {
       console.log(error);
     }
 
     // begins generating the local playlist
-    let mixTracks = [];
+    const mixTracks = [];
 
-    this.state.collaborators.forEach((collaborator) => {
+    this.props.mix.collaborators.forEach((collaborator) => {
       collaborator.topTracks.forEach((track) => {
         mixTracks.push(track);
       });
     });
 
-    this.setState({ tracks: this.shuffle(mixTracks) });
-    const mixTracksURIs = this.state.tracks.map(track => track.uri);
+    await this.props.updateLocalMix({ tracks: mixTracks });
+    // this.setState(prevState => ({
+    //   mix: Object.assign({}, prevState, { tracks: mixTracks }),
+    // }));
+
+    const mixTracksURIs = this.props.mix.tracks.map(track => track.uri);
 
     // sets up the axios request body with the local playlist to be sent into Spotify API
     body = {
@@ -217,14 +233,14 @@ class Mixer extends React.Component {
 
     // posts the new local playlist to the Spotify API
     try {
-      await axios.post(`${this.SPOTIFY_URL}/playlists/${this.state.playlistID}/tracks`, body, config);
+      await axios.post(`${this.SPOTIFY_URL}/playlists/${this.props.mix.spotifyPlaylistID}/tracks`, body, config);
     } catch (error) {
       console.log(error);
     }
   }
 
   renderPlayer = () => {
-    if (this.state.playlistID === '') {
+    if (this.props.mix.spotifyPlaylistID === '') {
       return (<Heading alignSelf="center" color="brand" textAlign="center" level="5">Make a Mix to start playing!</Heading>);
     } else {
       return (<Player startPlayback={this.startPlayback} />);
@@ -232,20 +248,19 @@ class Mixer extends React.Component {
   }
 
   renderTracks = () => {
-    if (this.state.playlistID === '') {
+    if (this.props.mix.spotifyPlaylistID === '') {
       return (<Box fill justify="center" align="center"><Loader type="Puff" height={90} width={90} color="#7D4CDB" /></Box>);
     } else {
-      const tracks = this.state.tracks.map(track => <Box key={track.id} flex="grow" round="medium" direction="row" justify="between" align="center"><Text color="brand" textAlign="center" size="small" weight="bold">{track.name}</Text><Text color="brand" textAlign="center" size="small">{track.artists[0]}</Text></Box>);
+      const tracks = this.props.mix.tracks.map(track => <Box key={track.id} flex="grow" round="medium" direction="row" justify="between" align="center"><Text color="brand" textAlign="center" size="small" weight="bold">{track.name}</Text><Text color="brand" textAlign="center" size="small">{track.artistNames[0]}</Text></Box>);
       return (tracks);
     }
   }
 
   render() {
-    if (!this.state.loaded || this.props.mixOwner.name === null) {
+    if (!this.state.mixHasLoaded || this.props.mixOwner.name === null) {
       return (<Loader type="Puff" height={200} width={200} color="#7D4CDB" />);
     } else {
-      console.log(this.state.tracks);
-      const collaborators = this.state.collaborators.map(collaborator => <Box key={collaborator.token} pad="small" gap="small" round="medium" justify="evenly" align="stretch"><Text textAlign="start" size="small">{collaborator.name}</Text></Box>);
+      const collaborators = this.props.mix.collaborators.map(collaborator => <Box key={collaborator.token} pad="small" gap="small" round="medium" justify="evenly" align="stretch"><Text textAlign="start" size="small">{collaborator.name}</Text></Box>);
       return (
         <Box id="mix" pad="medium">
           <Grid
@@ -294,7 +309,8 @@ class Mixer extends React.Component {
 const mapStateToProps = state => (
   {
     mixOwner: state.auth,
+    mix: state.mixes.current,
   }
 );
 
-export default withRouter(connect(mapStateToProps, null)(Mixer));
+export default withRouter(connect(mapStateToProps, { updateLocalMix, updateMix })(Mixer));
