@@ -66,13 +66,14 @@ export function getAudioFeatures(id) {
  * @param {String} id
  */
 export function currentizeMix(id, history) {
-  return (dispatch) => {
-    axios.get(`${ROOT_URL}/mixes/${id}`).then((response) => {
-      dispatch({ type: ActionTypes.CURRENTIZE_MIX, payload: response.data });
-      history.push(`/${id}`);
-    }).catch((error) => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.get(`${ROOT_URL}/mixes/${id}`);
+      await dispatch({ type: ActionTypes.CURRENTIZE_MIX, payload: response.data });
+      history.push(`/mix/${id}`);
+    } catch (error) {
       console.log(error);
-    });
+    }
   };
 }
 
@@ -111,6 +112,7 @@ export function updateMix(mixUpdate, id) {
  * @param {Object} mixUpdate
  */
 export function updateLocalMix(mixUpdate) {
+  console.log(mixUpdate);
   return {
     type: ActionTypes.UPDATE_MIX, payload: mixUpdate,
   };
@@ -123,7 +125,7 @@ export function updateLocalMix(mixUpdate) {
  */
 export function removeMix(id, history) {
   return (dispatch) => {
-    axios.delete(`${ROOT_URL}/mixes/${id}$`).then((response) => {
+    axios.delete(`${ROOT_URL}/mixes/${id}$`).then(() => {
       dispatch({ type: ActionTypes.REMOVE_MIX, payload: null });
       history.push('/');
     }).catch((error) => {
