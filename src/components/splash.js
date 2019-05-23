@@ -5,8 +5,8 @@ import {
   Button, Heading, Text, Box,
 } from 'grommet';
 
-// const mixifyServerURI = 'https://mixify-server.herokuapp.com/authOwner';
-const mixifyServerURI = 'http://localhost:9090/authOwner';
+const mixifyServerURI = 'https://mixify-server.herokuapp.com/authOwner';
+// const mixifyServerURI = 'http://localhost:9090/authOwner';
 
 const Splash = () => {
   return (
