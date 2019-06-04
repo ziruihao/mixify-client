@@ -13,8 +13,8 @@ export const ActionTypes = {
 
 
 // custom-built authentication node.js mixify-server
-const ROOT_URL = 'https://mixify-server.herokuapp.com';
-// const ROOT_URL = 'http://localhost:9090';
+// const ROOT_URL = 'https://mixify-server.herokuapp.com';
+const ROOT_URL = 'http://localhost:9090';
 
 // Spotify's API
 const SPOTIFY_URL = 'https://api.spotify.com/v1';
